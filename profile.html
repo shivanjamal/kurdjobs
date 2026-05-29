@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پڕۆفایلا من — KurdJobs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans Arabic', sans-serif; background-color: #0B1628; color: white; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Back Nav -->
+    <div class="mb-8">
+      <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-arrow-right"></i>
+        <span>ڤەگەڕیان بۆ سەرەتا</span>
+      </a>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="glass-card rounded-3xl p-6 md:p-10 mb-8 flex flex-col md:flex-row items-center gap-6">
+      <div class="w-24 h-24 rounded-full bg-blue-500/20 border-2 border-blue-500/40 flex items-center justify-center text-blue-500">
+        <i class="fa-solid fa-user text-4xl"></i>
+      </div>
+      <div class="text-center md:text-right flex-1">
+        <h1 id="profName" class="text-3xl font-bold mb-1">...</h1>
+        <p id="profEmail" class="text-gray-400 mb-4">...</p>
+        <div class="flex flex-wrap justify-center md:justify-start gap-2">
+          <span id="roleBadge" class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-blue-400">...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="glass-card rounded-3xl overflow-hidden">
+      <div class="p-6 border-b border-white/10 flex items-center justify-between">
+        <h2 class="font-bold text-lg" id="activityTitle">چالاکییێن من</h2>
+        <span id="activityCount" class="bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div id="activityList" class="divide-y divide-white/5">
+        <div class="p-20 text-center text-gray-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-4"></i>
+          <p>دهێتە بارکرن...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5nZtGd35Dc-rShXdt29E6iTrIKPkRGac",
+      authDomain: "mygameapp-69be7.firebaseapp.com",
+      projectId: "mygameapp-69be7",
+      storageBucket: "mygameapp-69be7.firebasestorage.app",
+      messagingSenderId: "770807145943",
+      appId: "1:770807145943:web:593cb35242cf3dfc1d1792"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Load User Info
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        document.getElementById('profName').innerText = userData.displayName || user.email.split('@')[0];
+        document.getElementById('profEmail').innerText = userData.email;
+        document.getElementById('roleBadge').innerText = userData.role === 'employer' ? 'خودان کار' : 'داخوازکارێ کاری';
+        
+        loadActivity(user.uid, userData.role);
+      }
+    });
+
+    async function loadActivity(uid, role) {
+      const list = document.getElementById('activityList');
+      const title = document.getElementById('activityTitle');
+      const countLabel = document.getElementById('activityCount');
+      
+      try {
+        let html = '';
+        if (role === 'employer') {
+          title.innerText = 'ئەو کارێن تە بەلاڤکرین';
+          const q = query(collection(db, "jobs"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+          const snap = await getDocs(q);
+          countLabel.innerText = snap.size;
+          
+          if (snap.empty) {
+            html = '<div class="p-10 text-center text-gray-500 text-sm">تە هێشتا چ کار بەلاڤ نەکریینە.</div>';
+          } else {
+            snap.docs.forEach(d => {
+              const job = d.data();
+              const jobLogoUrl = job.logoUrl || null;
+              html += `
+                <div class="p-4 flex justify-between items-center">
+                  <div>
+                    <div class="font-bold text-sm text-white">${job.title.en}</div>
+                    <div class="text-[10px] text-gray-500">${job.locationKey.toUpperCase()} • ${job.type}</div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    ${jobLogoUrl ? `<img src="${jobLogoUrl}" alt="${job.company.en} logo" class="w-8 h-8 rounded-md object-cover">` : `<div class="w-8 h-8 rounded-md bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs font-bold">${job.company.en.substring(0, 2).toUpperCase()}</div>`}
+                    <a href="admin-dashboard.html" class="text-[10px] text-blue-400 hover:underline">برێڤەبرن</a>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        } else {
+          title.innerText = 'ئەو کارێن تە داخوازی پێشکێش کری';
+          const q = query(collection(db, "applications"), where("seekerId", "==", uid), orderBy("appliedAt", "desc"));
+          const snap = await getDocs(q);
+          countLabel.innerText = snap.size;
+
+          if (snap.empty) {
+            html = '<div class="p-10 text-center text-gray-500 text-sm">تە هێشتا داخوازی بۆ چ کاران پێشکێش نەکرییە.</div>';
+          } else {
+            for (const appDoc of snap.docs) {
+              const appData = appDoc.data();
+              const jobDoc = await getDoc(doc(db, "jobs", appData.jobId));
+              const jobTitle = jobDoc.exists() ? jobDoc.data().title.en : "کار هاتە ژێبرن";
+              html += `
+                <div class="p-4 flex justify-between items-center">
+                  <div>
+                    <div class="font-bold text-sm text-white">${jobTitle}</div>
+                    <div class="text-[10px] text-gray-500">${appData.status || 'pending'}</div>
+                  </div>
+                  <a href="my-applications.html" class="text-[10px] text-blue-400 hover:underline">بینین</a>
+                </div>
+              `;
+            }
+          }
+        }
+        list.innerHTML = html;
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class="p-10 text-center text-red-400 text-xs">کێشەیەک پەیدابوو د بارکرنا چالاکییان دا.</div>';
+      }
+    }
+  </script>
+</body>
+</html>

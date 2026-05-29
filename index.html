@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KurdJobs — The #1 Job Platform in Kurdistan & Iraq</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { DEFAULT:'#0B1628', light:'#13203A', lighter:'#1A2D4D' },
+            slate: { DEFAULT:'#475569', light:'#64748B', lighter:'#94A3B8' },
+            action: { DEFAULT:'#0055FF', hover:'#0044CC', light:'#E8F1FF', glow:'rgba(0,85,255,0.15)' },
+            surface: '#F7F9FC',
+            card: '#FFFFFF',
+            border: '#E2E8F0',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --navy: #0B1628;
+      --navy-light: #13203A;
+      --action: #0055FF;
+      --action-hover: #0044CC;
+      --action-light: #E8F1FF;
+      --surface: #F7F9FC;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --text-muted: #64748B;
+    }
+
+    * { box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--surface); margin:0; overflow-x:hidden; }
+    html[dir="rtl"] body { font-family: 'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif; }
+
+    /* Hero grid pattern */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-glow {
+      position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,85,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute; width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,180,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Floating particles */
+    .particle {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      background: rgba(0,85,255,0.15); animation: float-particle linear infinite;
+    }
+    @keyframes float-particle {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+    }
+
+    /* Card hover */
+    .job-card {
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .job-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,85,255,0.06);
+    }
+
+    /* Nav glass */
+    .nav-glass {
+      background: rgba(11,22,40,0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-glass.scrolled { background: rgba(11,22,40,0.95); }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Language dropdown & Flags */
+    .flag-img { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; }
+    .lang-dropdown { display: none; }
+    .lang-dropdown.open { display: block; }
+
+    /* Badge styles */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+    /* Filter chip */
+    .filter-chip {
+      padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      border: 1.5px solid var(--border); background: white; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      border-color: var(--action); background: var(--action-light); color: var(--action);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s cubic-bezier(.4,0,.2,1), transform 0.6s cubic-bezier(.4,0,.2,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100; display: none;
+      align-items: center; justify-content: center;
+      background: rgba(11,22,40,0.6); backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+    html[dir="rtl"] .toast-container { right: auto; left: 24px; }
+    .toast {
+      padding: 14px 20px; border-radius: 10px; background: white;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 500; animation: toast-in 0.35s cubic-bezier(.4,0,.2,1);
+      border-left: 4px solid #059669;
+    }
+    html[dir="rtl"] .toast { border-left: none; border-right: 4px solid #059669; }
+    .toast.error { border-left-color: #DC2626; }
+    html[dir="rtl"] .toast.error { border-left-color: transparent; border-right-color: #DC2626; }
+    @keyframes toast-in { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Step connector */
+    .step-connector {
+      position: absolute; top: 28px; height: 2px; background: linear-gradient(90deg, var(--action), rgba(0,85,255,0.2));
+      width: calc(100% - 56px);
+    }
+    html[dir="rtl"] .step-connector { right: 28px; }
+    html[dir="ltr"] .step-connector { left: 28px; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    /* Mobile menu */
+    .mobile-menu { display: none; }
+    .mobile-menu.open { display: flex; }
+
+    /* Pulse dot */
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #10B981;
+      animation: pulse-ring 2s cubic-bezier(.4,0,.6,1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+    }
+
+    /* Schema table */
+    .schema-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .schema-table th { text-align: left; padding: 10px 14px; background: #F1F5F9; font-weight: 700; color: #334155; border-bottom: 2px solid #E2E8F0; }
+    .schema-table td { padding: 10px 14px; border-bottom: 1px solid #F1F5F9; color: #475569; }
+    html[dir="rtl"] .schema-table th, html[dir="rtl"] .schema-table td { text-align: right; }
+    .schema-table code { background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #7C3AED; font-weight: 600; }
+    .schema-table .pk { background: #FEF3C7; color: #92400E; }
+    .schema-table .fk { background: #DBEAFE; color: #1E40AF; }
+
+    /* Input focus */
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--action) !important;
+      box-shadow: 0 0 0 3px rgba(0,85,255,0.1);
+    }
+
+    /* Bookmark animation */
+    .bookmark-btn.saved i { color: #F59E0B; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .particle, .reveal { animation: none !important; transition: none !important; }
+      .job-card:hover { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav id="mainNav" class="nav-glass fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-action flex items-center justify-center">
+            <i class="fa-solid fa-briefcase text-white text-sm"></i>
+          </div>
+          <span class="text-white font-extrabold text-lg tracking-tight">Kurd<span class="text-action">Jobs</span></span>
+        </a>
+
+        <!-- Desktop Links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#" class="text-white/80 hover:text-white text-sm font-medium transition-colors" data-i18n="nav.home">Home</a>
+          <a href="#jobs" class="text-white/80 hover:text-white text-sm font-medium transition-colors" data-i18n="nav.findJobs">Find Jobs</a>
+          <a href="#companies" class="text-white/80 hover:text-white text-sm font-medium transition-colors" data-i18n="nav.companies">Companies</a>
+          <a href="#how" class="text-white/80 hover:text-white text-sm font-medium transition-colors" data-i18n="nav.howItWorks">How It Works</a>
+          <a href="#jobs" onclick="toggleSavedFilter(event)" class="text-white/80 hover:text-white text-sm font-medium transition-colors flex items-center gap-1.5 relative">
+            
+            <i class="fa-solid fa-bookmark text-[10px]"></i>
+            <span data-i18n="nav.saved">Saved</span>
+            <span id="savedBadge" class="hidden absolute -top-2 -right-3 bg-action text-[10px] text-white px-1.5 rounded-full">0</span>
+          </a>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex items-center gap-3">
+          <!-- Language Switcher -->
+          <div class="relative">
+            <button id="langBtn" class="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all" aria-label="Switch Language">
+              <img id="currentFlag" src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg" class="flag-img" alt="Flag">
+              <span id="langLabel" class="leading-none">EN</span>
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
+            </button>
+            <div id="langDropdown" class="lang-dropdown absolute top-full mt-2 end-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[180px] overflow-hidden">
+              <button onclick="setLang('en')" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-action-light hover:text-action flex items-center gap-3 transition-colors">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg" class="flag-img" alt="English"> English
+              </button>
+              <button onclick="setLang('ku_so')" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-action-light hover:text-action flex items-center gap-3 transition-colors">
+                <img src="https://www.marefa.org/w/images/thumb/3/35/Flag_of_Kurdistan.svg/1200px-Flag_of_Kurdistan.svg.png" class="flag-img" alt="Soranî"> سۆرانی
+              </button>
+              <button onclick="setLang('ku_bad')" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-action-light hover:text-action flex items-center gap-3 transition-colors">
+                <img src="https://www.marefa.org/w/images/thumb/3/35/Flag_of_Kurdistan.svg/1200px-Flag_of_Kurdistan.svg.png" class="flag-img" alt="Badînî"> بادینی
+              </button>
+              <button onclick="setLang('ar')" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-action-light hover:text-action flex items-center gap-3 transition-colors">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Iraq.svg" class="flag-img" alt="Arabic"> العربية
+              </button>
+            </div>
+          </div>
+
+          <!-- Auth Buttons / User Area -->
+          <div id="user-profile-area" class="hidden items-center gap-3">
+            <div class="flex items-center gap-2">
+              <a href="profile.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                  <i class="fa-solid fa-circle-user text-lg"></i>
+                </div>
+                <span id="user-display-name" class="text-white text-sm font-medium hidden lg:inline"></span>
+              </a>
+              
+              <a href="admin-dashboard.html" id="dashboard-link" class="hidden md:flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-white/90 text-[12px] font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 transition-all">
+                <i class="fa-solid fa-chart-line text-action text-xs"></i>
+                <span data-i18n="nav.dashboard">Dashboard</span>
+              </a>
+            </div>
+            <button id="logout-btn" class="text-white/40 hover:text-red-400 transition-colors p-1" title="Sign Out">
+              <i class="fa-solid fa-right-from-bracket text-sm"></i>
+            </button>
+          </div>
+          <a id="sign-in-link" href="login.html" class="hidden sm:inline-flex text-white/70 hover:text-white text-sm font-medium transition-colors" data-i18n="nav.signIn">Sign In</a>
+          
+          <!-- Post Job CTA -->
+          <a id="nav-post-job" href="post-job.html" class="hidden items-center gap-1.5 bg-action hover:bg-action-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:shadow-lg hover:shadow-action/20">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span data-i18n="nav.postJob">Post a Job</span>
+          </a>
+          <!-- Mobile hamburger -->
+          <button id="mobileMenuBtn" class="md:hidden text-white/80 hover:text-white p-2" aria-label="Menu">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu flex-col bg-navy-light border-t border-white/5 px-4 py-4 gap-2 md:hidden">
+      <a href="#" class="text-white/80 hover:text-white text-sm font-medium py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors" data-i18n="nav.home">Home</a>
+      <a href="#jobs" class="text-white/80 hover:text-white text-sm font-medium py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors" data-i18n="nav.findJobs">Find Jobs</a>
+      <a href="#companies" class="text-white/80 hover:text-white text-sm font-medium py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors" data-i18n="nav.companies">Companies</a>
+      <a href="#how" class="text-white/80 hover:text-white text-sm font-medium py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors" data-i18n="nav.howItWorks">How It Works</a>
+      <a href="#jobs" onclick="toggleSavedFilter(event)" class="text-white/80 hover:text-white text-sm font-medium py-2.5 px-3 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2">
+        <i class="fa-solid fa-bookmark text-xs"></i>
+        <span data-i18n="nav.saved">Saved</span>
+      </a>
+      <div class="border-t border-white/10 mt-2 pt-3 flex flex-col gap-1">
+        <a href="my-applications.html" id="mobile-seeker-link" class="hidden items-center gap-3 py-2 px-3 rounded-lg text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-file-lines text-action text-xs"></i>
+          <span class="text-xs font-bold" data-i18n="nav.myApps">My Applications</span>
+        </a>
+        <a href="admin-dashboard.html" id="mobile-dashboard-link" class="hidden items-center gap-3 py-2 px-3 rounded-lg text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-chart-line text-action text-xs"></i>
+          <span class="text-xs font-bold" data-i18n="nav.dashboard">Dashboard</span>
+        </a>
+        <a href="profile.html" id="mobile-user-area" class="hidden items-center gap-3 py-2 px-3 mt-1 hover:bg-white/5 rounded-lg transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0">
+              <i class="fa-solid fa-circle-user text-base"></i>
+            </div>
+            <span id="mobile-user-name" class="text-white text-sm font-medium truncate"></span>
+          </div>
+        </a>
+        <a id="mobile-sign-in-link" href="login.html" class="text-white/70 text-sm font-medium py-2 px-3 hover:bg-white/5 rounded-lg" data-i18n="nav.signIn">Sign In</a>
+        <a id="mobile-post-job" href="post-job.html" class="hidden bg-action text-white text-sm font-semibold py-2.5 px-4 rounded-xl text-center mt-2 shadow-lg shadow-action/20" data-i18n="nav.postJob">Post a Job</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ===== HERO SECTION ===== -->
+    <section class="relative bg-navy min-h-[92vh] flex items-center hero-grid overflow-hidden pt-16">
+      <div class="hero-glow" style="top:-200px;left:-100px;"></div>
+      <div class="hero-glow-2" style="bottom:-100px;right:-50px;"></div>
+      <div id="particles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+        <div class="max-w-3xl mx-auto text-center">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 reveal">
+            <div class="pulse-dot"></div>
+            <span class="text-white/70 text-xs font-semibold tracking-wide uppercase" data-i18n="hero.badge">The #1 Job Platform in Kurdistan & Iraq</span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-6 reveal" style="transition-delay:0.1s">
+            <span data-i18n="hero.title">Find Your Dream Career</span><br>
+            <span class="bg-gradient-to-r from-action to-[#00AAFF] bg-clip-text text-transparent" data-i18n="hero.titleHighlight">In Kurdistan</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="text-white/50 text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-10 reveal" style="transition-delay:0.2s" data-i18n="hero.subtitle">
+            Connect with top employers across Erbil, Sulaymaniyah, Duhok, and beyond. Thousands of opportunities waiting for you.
+          </p>
+
+          <!-- Search Bar -->
+          <div class="reveal" style="transition-delay:0.3s">
+            <div class="bg-white rounded-2xl p-2 shadow-2xl shadow-black/20 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
+              <div class="flex-1 flex items-center gap-3 px-4 py-2">
+                <i class="fa-solid fa-magnifying-glass text-slate-lighter text-sm"></i>
+                <input id="heroSearch" type="text" class="w-full border-none bg-transparent text-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:shadow-none" data-i18n-placeholder="hero.searchPlaceholder" placeholder="Job title, keyword, or company...">
+              </div>
+              <div class="hidden sm:block w-px bg-gray-200 my-1"></div>
+              <div class="flex items-center gap-3 px-4 py-2 sm:w-44">
+                <i class="fa-solid fa-location-dot text-slate-lighter text-sm"></i>
+                <select id="heroLocation" class="w-full border-none bg-transparent text-sm text-gray-800 focus:ring-0 focus:shadow-none cursor-pointer appearance-none">
+                  <option value="" data-i18n="hero.allLocations">All Locations</option>
+                  <option value="erbil">Erbil</option>
+                  <option value="sulaymaniyah">Sulaymaniyah</option>
+                  <option value="duhok">Duhok</option>
+                  <option value="kirkuk">Kirkuk</option>
+                </select>
+              </div>
+              <button onclick="scrollToJobs()" class="bg-action hover:bg-action-hover text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-action/25 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                <span data-i18n="hero.searchBtn">Search Jobs</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Tags -->
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-6 reveal" style="transition-delay:0.4s">
+            <span class="text-white/30 text-xs" data-i18n="hero.popular">Popular:</span>
+            <button onclick="quickSearch('Software')" class="text-white/50 hover:text-white/80 text-xs bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full transition-colors">Software</button>
+            <button onclick="quickSearch('Marketing')" class="text-white/50 hover:text-white/80 text-xs bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full transition-colors">Marketing</button>
+            <button onclick="quickSearch('Engineering')" class="text-white/50 hover:text-white/80 text-xs bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full transition-colors">Engineering</button>
+            <button onclick="quickSearch('Finance')" class="text-white/50 hover:text-white/80 text-xs bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full transition-colors">Finance</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto mt-16 reveal" style="transition-delay:0.5s">
+          <div class="text-center">
+            <div class="text-2xl sm:text-3xl font-extrabold text-white"><span id="totalJobsCount">0</span><span class="text-action">+</span></div>
+            <div class="text-white/40 text-xs sm:text-sm font-medium mt-1" data-i18n="hero.statsJobs">Active Jobs</div>
+          </div>
+          <div class="text-center border-x border-white/10">
+            <div class="text-2xl sm:text-3xl font-extrabold text-white"><span id="totalEmployersCount">0</span><span class="text-action">+</span></div>
+            <div class="text-white/40 text-xs sm:text-sm font-medium mt-1" data-i18n="hero.statsEmployers">Employers</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl sm:text-3xl font-extrabold text-white"><span id="totalSeekersCount">0</span><span class="text-action">+</span></div>
+            <div class="text-white/40 text-xs sm:text-sm font-medium mt-1" data-i18n="hero.statsSeekers">Job Seekers</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom wave -->
+      <div class="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full">
+          <path d="M0 40C240 80 480 0 720 40C960 80 1200 0 1440 40V80H0V40Z" fill="#F7F9FC"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ===== JOB LISTINGS SECTION ===== -->
+    <section id="jobs" class="py-16 sm:py-24 bg-surface">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 reveal">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-navy" data-i18n="jobs.title">Featured Jobs</h2>
+            <p class="text-slate text-sm mt-1" data-i18n="jobs.subtitle">Hand-picked opportunities from top employers</p>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-slate">
+            <span id="resultCount" data-i18n="jobs.showing">Showing 8</span>
+            <span data-i18n="jobs.results">results</span>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="bg-white rounded-2xl border border-border p-4 mb-8 reveal" style="transition-delay:0.1s">
+          <div class="flex flex-col lg:flex-row gap-3">
+            <!-- Text Search -->
+            <div class="flex-1 flex items-center gap-2 bg-surface rounded-xl px-4 py-2.5 border border-transparent focus-within:border-action">
+              <i class="fa-solid fa-magnifying-glass text-slate-lighter text-sm"></i>
+              <input id="filterSearch" type="text" class="w-full bg-transparent text-sm placeholder:text-slate-lighter border-none focus:ring-0 focus:shadow-none" data-i18n-placeholder="jobs.filterSearch" placeholder="Filter by title or company..." oninput="applyFilters()">
+            </div>
+
+            <!-- Location -->
+            <div class="flex items-center gap-2 bg-surface rounded-xl px-4 py-2.5 border border-transparent focus-within:border-action sm:w-48">
+              <i class="fa-solid fa-location-dot text-slate-lighter text-sm"></i>
+              <select id="filterLocation" class="w-full bg-transparent text-sm border-none focus:ring-0 focus:shadow-none cursor-pointer appearance-none text-gray-700" onchange="applyFilters()">
+                <option value="" data-i18n="jobs.allLocations">All Locations</option>
+                <option value="erbil">Erbil</option>
+                <option value="sulaymaniyah">Sulaymaniyah</option>
+                <option value="duhok">Duhok</option>
+                <option value="kirkuk">Kirkuk</option>
+              </select>
+            </div>
+
+            <!-- Job Type -->
+            <div class="flex items-center gap-2 bg-surface rounded-xl px-4 py-2.5 border border-transparent focus-within:border-action sm:w-48">
+              <i class="fa-solid fa-clock text-slate-lighter text-sm"></i>
+              <select id="filterType" class="w-full bg-transparent text-sm border-none focus:ring-0 focus:shadow-none cursor-pointer appearance-none text-gray-700" onchange="applyFilters()">
+                <option value="" data-i18n="jobs.allTypes">All Types</option>
+                <option value="full-time" data-i18n="jobs.fullTime">Full-time</option>
+                <option value="part-time" data-i18n="jobs.partTime">Part-time</option>
+                <option value="remote" data-i18n="jobs.remote">Remote</option>
+                <option value="contract" data-i18n="jobs.contract">Contract</option>
+              </select>
+            </div>
+
+            <!-- Clear -->
+            <button onclick="clearFilters()" class="flex items-center gap-1.5 text-slate hover:text-red-500 text-sm font-medium px-4 py-2.5 transition-colors whitespace-nowrap">
+              <i class="fa-solid fa-xmark text-xs"></i>
+              <span data-i18n="jobs.clear">Clear</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Job Grid -->
+        <div id="jobGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Jobs injected by JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+          <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-face-meh text-gray-300 text-2xl"></i>
+          </div>
+          <p class="text-slate font-medium" data-i18n="jobs.noResults">No jobs found matching your criteria</p>
+          <button onclick="clearFilters()" class="mt-3 text-action text-sm font-semibold hover:underline" data-i18n="jobs.clearFilters">Clear all filters</button>
+        </div>
+
+        <!-- Load More -->
+        <div id="loadMoreWrap" class="text-center mt-10 reveal">
+          <button class="inline-flex items-center gap-2 bg-navy hover:bg-navy-light text-white font-semibold text-sm px-8 py-3 rounded-xl transition-all hover:shadow-lg">
+            <span data-i18n="jobs.loadMore">View All Jobs</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURED COMPANIES ===== -->
+    <section id="companies" class="py-16 sm:py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12 reveal">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-navy" data-i18n="companies.title">Top Employers</h2>
+          <p class="text-slate text-sm mt-2 max-w-md mx-auto" data-i18n="companies.subtitle">Companies that trust KurdJobs to find their next great hire</p>
+        </div>
+        <div id="companiesGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section id="how" class="py-16 sm:py-24 bg-surface">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16 reveal">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-navy" data-i18n="how.title">How It Works</h2>
+          <p class="text-slate text-sm mt-2" data-i18n="how.subtitle">Three simple steps to land your next role</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+          <!-- Connector (desktop) -->
+          <div class="step-connector hidden md:block"></div>
+
+          <div class="text-center reveal" style="transition-delay:0.1s">
+            <div class="w-14 h-14 rounded-2xl bg-action text-white flex items-center justify-center text-xl font-extrabold mx-auto mb-5 shadow-lg shadow-action/20">1</div>
+            <h3 class="font-bold text-navy text-lg mb-2" data-i18n="how.step1Title">Browse Opportunities</h3>
+            <p class="text-slate text-sm leading-relaxed" data-i18n="how.step1Desc">Explore thousands of curated job listings from verified employers across Kurdistan and Iraq.</p>
+          </div>
+          <div class="text-center reveal" style="transition-delay:0.2s">
+            <div class="w-14 h-14 rounded-2xl bg-action text-white flex items-center justify-center text-xl font-extrabold mx-auto mb-5 shadow-lg shadow-action/20">2</div>
+            <h3 class="font-bold text-navy text-lg mb-2" data-i18n="how.step2Title">Apply Instantly</h3>
+            <p class="text-slate text-sm leading-relaxed" data-i18n="how.step2Desc">Use Quick Apply to submit your profile in seconds, or customize your application for each role.</p>
+          </div>
+          <div class="text-center reveal" style="transition-delay:0.3s">
+            <div class="w-14 h-14 rounded-2xl bg-action text-white flex items-center justify-center text-xl font-extrabold mx-auto mb-5 shadow-lg shadow-action/20">3</div>
+            <h3 class="font-bold text-navy text-lg mb-2" data-i18n="how.step3Title">Get Hired</h3>
+            <p class="text-slate text-sm leading-relaxed" data-i18n="how.step3Desc">Track your applications, receive interview invites, and land your dream career.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EMPLOYER CTA ===== -->
+    <section class="py-16 sm:py-24 bg-navy relative overflow-hidden hero-grid">
+      <div class="hero-glow" style="top:-200px;right:-200px;"></div>
+      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+        <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-6">
+          <i class="fa-solid fa-building text-action text-xs"></i>
+          <span class="text-white/60 text-xs font-semibold uppercase tracking-wide" data-i18n="cta.badge">For Employers</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4" data-i18n="cta.title">Hire the Best Talent in Kurdistan</h2>
+        <p class="text-white/40 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto mb-8" data-i18n="cta.subtitle">
+          Post jobs, build your employer brand, and access a pool of 85,000+ qualified professionals. Multi-language job postings included.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="post-job.html" class="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white font-semibold text-sm px-8 py-3.5 rounded-xl transition-all hover:shadow-lg hover:shadow-action/25">
+            <i class="fa-solid fa-rocket text-xs"></i>
+            <span data-i18n="cta.postJob">Start Hiring Today</span>
+          </a>
+          <a href="#" class="inline-flex items-center gap-2 text-white/60 hover:text-white font-medium text-sm px-6 py-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+            <i class="fa-solid fa-play text-xs"></i>
+            <span data-i18n="cta.learnMore">Watch Demo</span>
+          </a>
+        </div>
+        <!-- Employer Features -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12">
+          <div class="bg-white/5 border border-white/5 rounded-xl p-4">
+            <i class="fa-solid fa-language text-action text-lg mb-2"></i>
+            <div class="text-white text-sm font-semibold" data-i18n="cta.feat1">Trilingual Postings</div>
+          </div>
+          <div class="bg-white/5 border border-white/5 rounded-xl p-4">
+            <i class="fa-solid fa-chart-line text-action text-lg mb-2"></i>
+            <div class="text-white text-sm font-semibold" data-i18n="cta.feat2">Analytics Dashboard</div>
+          </div>
+          <div class="bg-white/5 border border-white/5 rounded-xl p-4">
+            <i class="fa-solid fa-users text-action text-lg mb-2"></i>
+            <div class="text-white text-sm font-semibold" data-i18n="cta.feat3">Applicant Tracking</div>
+          </div>
+          <div class="bg-white/5 border border-white/5 rounded-xl p-4">
+            <i class="fa-solid fa-shield-halved text-action text-lg mb-2"></i>
+            <div class="text-white text-sm font-semibold" data-i18n="cta.feat4">Verified Companies</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="bg-navy border-t border-white/5 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div class="col-span-2 md:col-span-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-action flex items-center justify-center">
+              <i class="fa-solid fa-briefcase text-white text-xs"></i>
+            </div>
+            <span class="text-white font-extrabold text-base">Kurd<span class="text-action">Jobs</span></span>
+          </div>
+          <p class="text-white/30 text-xs leading-relaxed" data-i18n="footer.desc">The leading job platform connecting talent with opportunity across Kurdistan and Iraq.</p>
+          <div class="flex items-center gap-3 mt-4">
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-linkedin-in text-xs"></i></a>
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-instagram text-xs"></i></a>
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-x-twitter text-xs"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4" data-i18n="footer.forJobSeekers">For Job Seekers</h4>
+          <div class="flex flex-col gap-2.5">
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.browseJobs">Browse Jobs</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.companies">Companies</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.salaryGuide">Salary Guide</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.careerAdvice">Career Advice</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4" data-i18n="footer.forEmployers">For Employers</h4>
+          <div class="flex flex-col gap-2.5">
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.postJob">Post a Job</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.pricing">Pricing</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.employerHub">Employer Hub</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.apiAccess">API Access</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4" data-i18n="footer.resources">Resources</h4>
+          <div class="flex flex-col gap-2.5">
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.about">About Us</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.contact">Contact</a>
+            <a href="#" class="text-white/30 hover:text-white/60 text-xs transition-colors" data-i18n="footer.privacy">Privacy Policy</a>
+            <button onclick="openSchemaModal()" class="text-white/30 hover:text-white/60 text-xs transition-colors text-start" data-i18n="footer.dbSchema">DB Schema</button>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-white/20 text-xs" data-i18n="footer.copyright">2025 KurdJobs. All rights reserved.</p>
+        <p class="text-white/20 text-xs">Built with <i class="fa-solid fa-heart text-action text-[10px]"></i> in Duhok</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== QUICK APPLY MODAL ===== -->
+  <div id="applyModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div class="bg-navy p-5 flex items-center justify-between">
+        <div>
+          <h3 class="text-white font-bold text-base" data-i18n="apply.title">Quick Apply</h3>
+          <p id="applyJobTitle" class="text-white/50 text-xs mt-0.5"></p>
+        </div>
+        <button onclick="closeApplyModal()" class="text-white/40 hover:text-white w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="applyForm" class="p-5 space-y-4" onsubmit="submitApply(event)">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5" data-i18n="apply.fullName">Full Name</label>
+          <input type="text" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm transition-all" placeholder="Ahmed Muhammad">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5" data-i18n="apply.email">Email Address</label>
+          <input type="email" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm transition-all" placeholder="ahmed@email.com">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5" data-i18n="apply.phone">Phone Number</label>
+          <input type="tel" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm transition-all" placeholder="+964 750 123 4567">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5" data-i18n="apply.resume">Resume / CV</label>
+          <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-action/40 transition-colors cursor-pointer" onclick="this.querySelector('input').click()">
+            <input type="file" class="hidden" accept=".pdf,.doc,.docx">
+            <i class="fa-solid fa-cloud-arrow-up text-gray-300 text-xl mb-2"></i>
+            <p class="text-xs text-slate" data-i18n="apply.uploadHint">Click to upload PDF or DOC</p>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-action hover:bg-action-hover text-white font-semibold text-sm py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-action/20">
+          <span data-i18n="apply.submit">Submit Application</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DATABASE SCHEMA MODAL ===== -->
+  <div id="schemaModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden max-h-[85vh] flex flex-col">
+      <div class="bg-navy p-5 flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="text-white font-bold text-base" data-i18n="schema.title">Database Schema — PostgreSQL</h3>
+          <p class="text-white/50 text-xs mt-0.5">Supabase-compatible schema for KurdJobs platform</p>
+        </div>
+        <button onclick="closeSchemaModal()" class="text-white/40 hover:text-white w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto" id="schemaContent">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+
+  <script>
+    // ==========================================
+    // LOCALIZATION DATA — 4 Languages
+    // ==========================================
+    const i18n = {
+      en: {
+        dir: 'ltr',
+        langLabel: 'EN',
+        nav: {
+          home: 'Home', findJobs: 'Find Jobs', companies: 'Companies',
+          howItWorks: 'How It Works', signIn: 'Sign In', postJob: 'Post a Job', saved: 'Saved', dashboard: 'Dashboard', myApps: 'My Applications'
+        },
+        hero: {
+          badge: 'The #1 Job Platform in Kurdistan & Iraq',
+          title: 'Find Your Dream Career', titleHighlight: 'In Kurdistan',
+          subtitle: 'Connect with top employers across Erbil, Sulaymaniyah, Duhok, and beyond. Thousands of opportunities waiting for you.',
+          searchPlaceholder: 'Job title, keyword, or company...',
+          allLocations: 'All Locations', searchBtn: 'Search Jobs', popular: 'Popular:',
+          statsJobs: 'Active Jobs', statsEmployers: 'Employers', statsSeekers: 'Job Seekers'
+        },
+        jobs: {
+          title: 'Featured Jobs', subtitle: 'Hand-picked opportunities from top employers',
+          showing: 'Showing', results: 'results',
+          filterSearch: 'Filter by title or company...', allLocations: 'All Locations',
+          allTypes: 'All Types', fullTime: 'Full-time', partTime: 'Part-time',
+          remote: 'Remote', contract: 'Contract', clear: 'Clear',
+          noResults: 'No jobs found matching your criteria',
+          clearFilters: 'Clear all filters', loadMore: 'View All Jobs',
+          quickApply: 'Quick Apply', save: 'Save', posted: 'Posted'
+        },
+        companies: {
+          title: 'Top Employers', subtitle: 'Companies that trust KurdJobs to find their next great hire', openJobs: 'open jobs'
+        },
+        how: {
+          title: 'How It Works', subtitle: 'Three simple steps to land your next role',
+          step1Title: 'Browse Opportunities',
+          step1Desc: 'Explore thousands of curated job listings from verified employers across Kurdistan and Iraq.',
+          step2Title: 'Apply Instantly',
+          step2Desc: 'Use Quick Apply to submit your profile in seconds, or customize your application for each role.',
+          step3Title: 'Get Hired',
+          step3Desc: 'Track your applications, receive interview invites, and land your dream career.'
+        },
+        cta: {
+          badge: 'For Employers', title: 'Hire the Best Talent in Kurdistan',
+          subtitle: 'Post jobs, build your employer brand, and access a pool of 85,000+ qualified professionals. Multi-language job postings included.',
+          postJob: 'Start Hiring Today', learnMore: 'Watch Demo',
+          feat1: 'Trilingual Postings', feat2: 'Analytics Dashboard',
+          feat3: 'Applicant Tracking', feat4: 'Verified Companies'
+        },
+        footer: {
+          desc: 'The leading job platform connecting talent with opportunity across Kurdistan and Iraq.',
+          forJobSeekers: 'For Job Seekers', browseJobs: 'Browse Jobs', companies: 'Companies',
+          salaryGuide: 'Salary Guide', careerAdvice: 'Career Advice',
+          forEmployers: 'For Employers', postJob: 'Post a Job', pricing: 'Pricing',
+          employerHub: 'Employer Hub', apiAccess: 'API Access',
+          resources: 'Resources', about: 'About Us', contact: 'Contact',
+          privacy: 'Privacy Policy', dbSchema: 'DB Schema Docs',
+          copyright: '2025 KurdJobs. All rights reserved.'
+        },
+        apply: {
+          title: 'Quick Apply', fullName: 'Full Name', email: 'Email Address',
+          phone: 'Phone Number', resume: 'Resume / CV', uploadHint: 'Click to upload PDF or DOC',
+          submit: 'Submit Application'
+        },
+        schema: {
+          title: 'Database Schema — PostgreSQL'
+        },
+        toast: {
+          applied: 'Application submitted successfully!',
+          saved: 'Job saved to your bookmarks.',
+          removed: 'Job removed from bookmarks.'
+        },
+        loc: {
+          erbil: 'Erbil', sulaymaniyah: 'Sulaymaniyah', duhok: 'Duhok', kirkuk: 'Kirkuk'
+        }
+      },
+      ku_so: {
+        dir: 'rtl',
+        langLabel: 'سۆرانی',
+        nav: {
+          home: 'سەرەتا', findJobs: 'دۆزینەوەی کار', companies: 'کۆمپانیاکان',
+          howItWorks: 'چۆن کار دەکات', signIn: 'چوونەژوورەوە', postJob: 'بڵاوکردنەوەی کار', saved: 'پاشەکەوتکراو', dashboard: 'داشبۆرد', myApps: 'داواکارییەکانم'
+        },
+        hero: {
+          badge: 'یەکەم پلاتفۆرمی کار لە کوردستان و عێراق',
+          title: 'کارە خەوناکەت بدۆزەرەوە', titleHighlight: 'لە کوردستان',
+          subtitle: 'پەیوەندی بە خاوەنکارانە سەرەکەکانەوە لە هەولێر، سلێمانی، دھۆک و ئەوانی تر بکە. هەزاران فرصەت چاوەڕوانی تۆن.',
+          searchPlaceholder: 'ناونیشانی کار، وشەی کلیل، یان کۆمپانیا...',
+          allLocations: 'هەموو شوێنەکان', searchBtn: 'گەڕان بۆ کار', popular: 'هەرە پڕبینە:',
+          statsJobs: 'کاری چالاک', statsEmployers: 'خاوەنکار', statsSeekers: 'داواکارانی کار'
+        },
+        jobs: {
+          title: 'کارە پێشکەشکراوەکان', subtitle: 'فرصەتە هەڵبژێردراوەکان لە خاوەنکارانە سەرەکەکان',
+          showing: 'پیشاندراو', results: 'ئەنجام',
+          filterSearch: 'فلتەر بە ناونیشان یان کۆمپانیا...', allLocations: 'هەموو شوێنەکان',
+          allTypes: 'هەموو جۆرەکان', fullTime: 'تەواوکات', partTime: 'نیوەکات',
+          remote: 'لە دوورەوە', contract: 'پێوەکراو', clear: 'سڕینەوە',
+          noResults: 'هیچ کارێک نەدۆزرایەوە بەپێی مەرجەکانت',
+          clearFilters: 'سڕینەوەی هەموو فلتەرەکان', loadMore: 'بینینی هەموو کارەکان',
+          quickApply: 'خێرا داواکاری', save: 'پاشەکەوت', posted: 'بڵاوکراوە'
+        },
+        companies: {
+          title: 'خاوەنکارانی سەرەکی', subtitle: 'کۆمپانیاکان کە متمانە بە KurdJobs دەکەن بۆ دۆزینەوەی کارمەندی داهاتوو', openJobs: 'کاری کراوە'
+        },
+        how: {
+          title: 'چۆن کار دەکات', subtitle: 'سێ هەنگاوی سادە بۆ دەستکەوتنی کارە داهاتووت',
+          step1Title: 'گەڕان بۆ فرصەت',
+          step1Desc: 'هەزاران لیستی کاری هەڵبژێردراو لە خاوەنکارانە پشتڕاستکراوەکان بگەڕێ لە کوردستان و عێراق.',
+          step2Title: 'خێرا داواکاری بکە',
+          step2Desc: 'بەکارهێنانی خێرا داواکاری بۆ ناردنی پرۆفایلەکەت لە چەند چرکەیەکدا.',
+          step3Title: 'دامەزرا',
+          step3Desc: 'بەدواداچوونی داواکارییەکانت بکە، بانگی چاوپێکەوتن وەربگرە و کارە خەوناکەت بەدەست بهێنە.'
+        },
+        cta: {
+          badge: 'بۆ خاوەنکاران', title: 'باشترین توانا لە کوردستان دامەزرێنە',
+          subtitle: 'کار بڵاو بکەرەوە، براندی خاوەنکاریت دروست بکە و دەستگەیشتن بە ٨٥،٠٠٠+ پیشەیی شایستە. بڵاوکردنەوەی کار بە چەند زمان.',
+          postJob: 'ئێستا دەست بە دامەزراندن بکە', learnMore: 'بینینی دیمۆ',
+          feat1: 'بڵاوکردنەوەی سێ زمانی', feat2: 'داشبۆردی ئامار',
+          feat3: 'بەدواداچوونی داواکار', feat4: 'کۆمپانیا پشتڕاستکراوەکان'
+        },
+        footer: {
+          desc: 'پلاتفۆرمی سەرەکیی کار کە توانا بە فرصەتەوە لە کوردستان و عێراق پەیوەندیدەکات.',
+          forJobSeekers: 'بۆ داواکاران', browseJobs: 'گەڕانی کار', companies: 'کۆمپانیاکان',
+          salaryGuide: 'ڕێنمایی مووچە', careerAdvice: 'ڕاوێژکاری پیشەیی',
+          forEmployers: 'بۆ خاوەنکاران', postJob: 'بڵاوکردنەوەی کار', pricing: 'نرخەکان',
+          employerHub: 'ناوەندی خاوەنکار', apiAccess: 'دەستگەیشتنی API',
+          resources: 'سەرچاوەکان', about: 'دەربارەی ئێمە', contact: 'پەیوەندی',
+          privacy: 'سیاسەتی تایبەتمەندی', dbSchema: 'ئەرکەی داتابەیس',
+          copyright: '٢٠٢٥ KurdJobs. هەمی ماف پاراستینە. .'
+        },
+        apply: {
+          title: 'خێرا داواکاری', fullName: 'ناوی تەواو', email: 'ئیمەیل',
+          phone: 'ژمارەی مۆبایل', resume: 'ڕیزۆمە / CV', uploadHint: 'کلیک بکە بۆ بەرزکردنەوەی PDF یان DOC',
+          submit: 'ناردنی داواکاری'
+        },
+        schema: { title: 'ئەرکەی داتابەیس — PostgreSQL' },
+        toast: {
+          applied: 'داواکارییەکەت بە سەرکەوتوویی نێردرا!',
+          saved: 'کارەکە پاشەکەوت کرا.',
+          removed: 'کارەکە لە پاشەکەوتەکان سڕایەوە.'
+        },
+        loc: {
+          erbil: 'هەولێر', sulaymaniyah: 'سلێمانی', duhok: 'دهۆک', kirkuk: 'کەرکووک'
+        }
+      },
+      ku_bad: {
+        dir: 'rtl',
+        langLabel: 'بادینی',
+        nav: {
+          home: 'سەرەتا', findJobs: 'کار بدۆزەرەوە', companies: 'کۆمپانیاکان',
+          howItWorks: 'چەوان کار دکەت', signIn: 'چوونە ژوور', postJob: 'بەلاڤکرنا کاری', saved: 'پاشەکەوتکری', dashboard: 'داشبۆرد', myApps: 'داواکاریێن من'
+        },
+        hero: {
+          badge: 'ئێکەم پلاتفۆرمێ کاری ل کوردستانێ و عێراقێ',
+          title: 'کارێ خەونێن خۆ بدۆزە', titleHighlight: 'ل کوردستانێ',
+          subtitle: 'پەیوەندیێ ب باشترین خودان کاران بکە ل دهۆک، هەولێر، سلێمانی، و کەرکووکێ. هەزاران دەلیڤێن کاری چەڤەڕێی تە نە.',
+          searchPlaceholder: 'ناوی کار، وشەی کلیل، یان کۆمپانیا...',
+          allLocations: 'هەمی جهـ', searchBtn: 'گەڕیان ل کاران', popular: 'بەربلاڤترین:',
+          statsJobs: 'کارێن چالاک', statsEmployers: 'خودان کار', statsSeekers: 'داخوازکارێن کاری'
+        },
+        jobs: {
+          title: 'کارێن دەستنیشانکری', subtitle: 'دەلیڤێن کاری یێن هەلبژاردی ژ لایێ باشترین خودان کاران ڤە',
+          showing: 'نیشادان', results: 'ئەنجام',
+          filterSearch: 'فلتەرکرن ب ناڤی یان کۆمپانیایێ...', allLocations: 'هەمی جهـ',
+          allTypes: 'هەمی جۆر', fullTime: 'دەمێ تەمام', partTime: 'نیڤ دەم',
+          remote: 'ژ دوور ڤە', contract: 'گرێبەست', clear: 'پاککرن',
+          noResults: 'چ کار نەهاتنە دیتن بپێی ڤان مەرجان',
+          clearFilters: 'ژێبرنا هەمی فلتەران', loadMore: 'بینینا هەمی کاران',
+          quickApply: 'پێشکێشکرنا ب لەز', save: 'پاشەکەوت', posted: 'هاتییە بەلاڤکرن'
+        },
+        companies: {
+          title: 'خودان کارێن سەرەکی', subtitle: 'ئەو کۆمپانیایێن متمانێ ب KurdJobs دکەن بۆ دیتنا باشترین کارمەندان', openJobs: 'دەلیڤێن کاری'
+        },
+        how: {
+          title: 'چەوان کار دکەت', subtitle: 'سێ پێنگاڤێن سادە بۆ بدەستڤەئینانا کارێ داهاتی',
+          step1Title: 'ل دەلیڤان بگەڕیێ',
+          step1Desc: 'هزاران لیستێن کاری یێن هەلبژاردی ژ لایێ خودان کارێن پشتراستکری ل کوردستانێ و عێراقێ بگەڕیێ.',
+          step2Title: 'پێشکێشکرنا ب لەز',
+          step2Desc: 'بکارئینانا پێشکێشکرنا ب لەز بۆ ناردنا پرۆفایلێ خۆ د چەند چرکان دا.',
+          step3Title: 'وەرگرتن ل سەر کاری',
+          step3Desc: 'بەدواداچوونا داواکاریێن خۆ بکە، داخوازنامێن چاڤپێکەفتنێ وەربگرە و بگەهە کارێ خەونێن خۆ.'
+        },
+        cta: {
+          badge: 'بۆ خاوەن کاران', title: 'باشترین توانا لە کوردستان دامەزرێنە',
+          subtitle: 'کاران بەلاڤ بکە، ناڤێ کۆمپانیا خۆ بلند بکە و بگەهە پتر ژ ٨٥،٠٠٠ کارمەندێن شارەزا.l:',
+          feat1: 'بڵاوکردنەوەی سێ زمانی', feat2: 'داشبۆردی ئامار',
+          feat3: 'بەدواداچوونی داواکار', feat4: 'کۆمپانیا پشتڕاستکراوەکان'
+        },
+        footer: {
+          desc: 'پلاتفۆرمی سەرەکیی کار کە توانا بە فرصەتەوە لە کوردستان و عێراق پەیوەندیدەکات.',
+          forJobSeekers: 'بۆ داواکاران', browseJobs: 'گەڕانی کار', companies: 'کۆمپانیاکان',
+          salaryGuide: 'ڕێنمایی مووچە', careerAdvice: 'ڕاوێژکاری پیشەیی',
+          forEmployers: 'بۆ خاوەن کاران', postJob: 'بڵاوکردنەوەی کار', pricing: 'نرخەکان',
+          employerHub: 'ناوەندی خاوەن کار', apiAccess: 'دەستگەیشتنی API',
+          resources: 'سەرچاوەکان', about: 'دەربارەی ئێمە', contact: 'پەیوەندی',
+          privacy: 'سیاسەتا تایبەتمەندیێ', dbSchema: 'هەیکەلێ داتابەیسێ',
+          copyright: '٢٠٢٥ KurdJobs. هەموو مافەکان پارێزراون.'
+        },
+        apply: {
+          title: 'پێشکێشکرنا ب لەز', fullName: 'ناڤێ تەمام', email: 'ئیمەیل',
+          phone: 'ژمارا تەلەفۆنێ', resume: 'سیڤی / CV', uploadHint: 'کلیک بکە بۆ بلندکرنا فایلا PDF یان DOC',
+          submit: 'ناردنا داواکاریێ'
+        },
+        schema: { title: 'ئەرکەی داتابەیس — PostgreSQL' },
+        toast: {
+          applied: 'داواکارییا تە ب سەرکەفتی هاتە هنارتن!',
+          saved: 'کار هاتییە پاشەکەوتکرن',
+          removed: 'کار ژ پاشەکەوتان هاتە لادان'
+        },
+        loc: {
+          erbil: 'هەولێر', sulaymaniyah: 'سلێمانی', duhok: 'دهۆک', kirkuk: 'کەرکووک'
+        }
+      },
+      ar: {
+        dir: 'rtl',
+        langLabel: 'عربي',
+        nav: {
+          home: 'الرئيسية', findJobs: 'البحث عن وظائف', companies: 'الشركات',
+          howItWorks: 'كيف يعمل', signIn: 'تسجيل الدخول', postJob: 'نشر وظيفة', saved: 'المحفوظة', dashboard: 'لوحة التحكم', myApps: 'طلباتي'
+        },
+        hero: {
+          badge: 'المنصة الأولى للوظائف في كردستان والعراق',
+          title: 'اعثر على وظيفة أحلامك', titleHighlight: 'في كردستان',
+          subtitle: 'تواصل مع أفضل أصحاب العمل في أربيل والسليمانية ودهوك وما وراءها. آلاف الفرص في انتظارك.',
+          searchPlaceholder: 'المسمى الوظيفي، كلمة مفتاحية، أو شركة...',
+          allLocations: 'جميع المواقع', searchBtn: 'البحث عن وظائف', popular: 'الأكثر بحثاً:',
+          statsJobs: 'وظائف نشطة', statsEmployers: 'أصحاب العمل', statsSeekers: 'الباحثين عن عمل'
+        },
+        jobs: {
+          title: 'وظائف مميزة', subtitle: 'فرص مختارة بعناية من أفضل أصحاب العمل',
+          showing: 'عرض', results: 'نتائج',
+          filterSearch: 'تصفية بالمسمى أو الشركة...', allLocations: 'جميع المواقع',
+          allTypes: 'جميع الأنواع', fullTime: 'دوام كامل', partTime: 'دوام جزئي',
+          remote: 'عن بُعد', contract: 'عقد', clear: 'مسح',
+          noResults: 'لم يتم العثور على وظائف تطابق معاييرك',
+          clearFilters: 'مسح جميع التصفيات', loadMore: 'عرض جميع الوظائف',
+          quickApply: 'تقديم سريع', save: 'حفظ', posted: 'نُشرت'
+        },
+        companies: {
+          title: 'أفضل أصحاب العمل', subtitle: 'شركات تثق بـ KurdJobs لإيجاد موظفيها الممتازين القادمين', openJobs: 'وظائف مفتوحة'
+        },
+        how: {
+          title: 'كيف يعمل', subtitle: 'ثلاث خطوات بسيطة للحصول على وظيفتك القادمة',
+          step1Title: 'تصفح الفرص',
+          step1Desc: 'استكشف آلاف القوائم الوظيفية المختارة من أصحاب عمل موثوقين في كردستان والعراق.',
+          step2Title: 'قدّم فوراً',
+          step2Desc: 'استخدم التقديم السريع لإرسال ملفك الشخصي في ثوانٍ، أو خصّص طلبك لكل وظيفة.',
+          step3Title: 'احصل على الوظيفة',
+          step3Desc: 'تتبع طلباتك، واستقبل دعوات المقابلة، واحصل على وظيفة أحلامك.'
+        },
+        cta: {
+          badge: 'أصحاب العمل', title: 'وظّف أفضل المواهب في كردستان',
+          subtitle: 'انشر الوظائف، ابنِ علامتك التجارية كصاحب عمل، وادخل إلى مجتمع يضم أكثر من ٨٥٬٠٠٠ محترف مؤهل. يشمل النشر متعدد اللغات.',
+          postJob: 'ابدأ التوظيف الآن', learnMore: 'شاهد العرض',
+          feat1: 'نشر ثلاثي اللغات', feat2: 'لوحة تحليلات',
+          feat3: 'تتبع المتقدمين', feat4: 'شركات موثقة'
+        },
+        footer: {
+          desc: 'المنصة الرائدة للوظائف التي تربط المواهب بالفرص في كردستان والعراق.',
+          forJobSeekers: 'للباحثين عن عمل', browseJobs: 'تصفح الوظائف', companies: 'الشركات',
+          salaryGuide: 'دليل الرواتب', careerAdvice: 'نصائح مهنية',
+          forEmployers: 'أصحاب العمل', postJob: 'نشر وظيفة', pricing: 'الأسعار',
+          employerHub: 'مركز أصحاب العمل', apiAccess: 'الوصول للـ API',
+          resources: 'الموارد', about: 'من نحن', contact: 'اتصل بنا',
+          privacy: 'سياسة الخصوصية', dbSchema: 'هيكل قاعدة البيانات',
+          copyright: '٢٠٢٥ KurdJobs. جميع الحقوق محفوظة.'
+        },
+        apply: {
+          title: 'تقديم سريع', fullName: 'الاسم الكامل', email: 'البريد الإلكتروني',
+          phone: 'رقم الهاتف', resume: 'السيرة الذاتية', uploadHint: 'اضغط لرفع PDF أو DOC',
+          submit: 'إرسال الطلب'
+        },
+        schema: { title: 'هيكل قاعدة البيانات — PostgreSQL' },
+        toast: {
+          applied: 'تم إرسال طلبك بنجاح!',
+          saved: 'تم حفظ الوظيفة في المفضلة.',
+          removed: 'تم إزالة الوظيفة من المفضلة.'
+        },
+        loc: {
+          erbil: 'أربيل', sulaymaniyah: 'السليمانية', duhok: 'دهوك', kirkuk: 'كركوك'
+        }
+      }
+    };
+
+    // ==========================================
+    // JOB DATA — Multilingual
+    // ==========================================
+    let jobs = [];
+
+    // ==========================================
+    // COMPANY DATA — Multilingual
+    // ==========================================
+    const companies = [
+      { name: { en:'Kurdistan Tech Group', ku_so:'گرووپی تەکنەلۆژیای کوردستان', ku_bad:'گروپا تەکنەلۆژیایێ یا کوردستانێ', ar:'مجموعة تكنولوجيا كردستان' }, logo:'KT', color:'#0055FF', openJobs:24 },
+      { name: { en:'Erbil Investment Corp', ku_so:'کۆمپانیای وەبەرهێنانی هەولێر', ku_bad:'کۆمپانیا وەبەرهێنانا هەولێرێ', ar:'شركة استثمار أربيل' }, logo:'EI', color:'#059669', openJobs:18 },
+      { name: { en:'Sulaymaniyah Digital Hub', ku_so:'ناوەندی دیجیتاڵی سلێمانی', ku_bad:'سەنتەرێ دیجیتاڵی یێ سلێمانیێ', ar:'مركز السليمانية الرقمي' }, logo:'SD', color:'#8B5CF6', openJobs:15 },
+      { name: { en:'Duhok Construction', ku_so:'بیناسازیی دھۆک', ku_bad:'کۆمپانیا بیناسازیێ یا دهۆکێ', ar:'شركة بناء دهوك' }, logo:'DC', color:'#DC2626', openJobs:12 },
+      { name: { en:'Remote Middle East', ku_so:'ڕیمۆتی میدڵ ئیست', ku_bad:'ڕۆژهەلاتا ناڤین ب ڕێکا دوور', ar:'الشرق الأوسط عن بُعد' }, logo:'RM', color:'#EC4899', openJobs:31 },
+      { name: { en:'Baghdad Business Group', ku_so:'گرووپی بازرگانی بەغدا', ku_bad:'گروپا بازرگانیێ یا بەغدا', ar:'مجموعة بغداد التجارية' }, logo:'BB', color:'#6366F1', openJobs:9 }
+    ];
+
+    // ==========================================
+    // DATABASE SCHEMA
+    // ==========================================
+    const dbSchema = `
+      <div class="space-y-8">
+        <!-- employers table -->
+        <div>
+          <h4 class="font-bold text-navy text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-building text-action text-xs"></i> employers</h4>
+          <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <table class="schema-table">
+              <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code class="pk">id</code></td><td>UUID</td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td><td>Unique employer ID</td></tr>
+                <tr><td><code>user_id</code></td><td>UUID</td><td><code class="fk">FK → auth.users.id</code>, NOT NULL</td><td>Linked Supabase Auth account</td></tr>
+                <tr><td><code>company_name</code></td><td>JSONB</td><td>NOT NULL</td><td>{ "en": "", "ku_so": "", "ku_bad": "", "ar": "" }</td></tr>
+                <tr><td><code>bio</code></td><td>JSONB</td><td></td><td>Company description in 4 languages</td></tr>
+                <tr><td><code>logo_url</code></td><td>TEXT</td><td></td><td>Storage bucket reference</td></tr>
+                <tr><td><code>industry</code></td><td>TEXT</td><td></td><td>e.g. "Technology", "Construction"</td></tr>
+                <tr><td><code>website_url</code></td><td>TEXT</td><td></td><td>Company website</td></tr>
+                <tr><td><code>social_links</code></td><td>JSONB</td><td></td><td>{ "facebook": "", "linkedin": "", "instagram": "" }</td></tr>
+                <tr><td><code>employee_count</code></td><td>INTEGER</td><td></td><td>Company size range</td></tr>
+                <tr><td><code>is_verified</code></td><td>BOOLEAN</td><td>DEFAULT false</td><td>Admin verification badge</td></tr>
+                <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>DEFAULT now()</td><td>Record creation timestamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- jobs table -->
+        <div>
+          <h4 class="font-bold text-navy text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-briefcase text-action text-xs"></i> jobs</h4>
+          <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <table class="schema-table">
+              <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code class="pk">id</code></td><td>UUID</td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td><td>Unique job ID</td></tr>
+                <tr><td><code>employer_id</code></td><td>UUID</td><td><code class="fk">FK → employers.id</code>, ON DELETE CASCADE</td><td>Posting employer</td></tr>
+                <tr><td><code>title</code></td><td>JSONB</td><td>NOT NULL</td><td>{ "en": "", "ku_so": "", "ku_bad": "", "ar": "" }</td></tr>
+                <tr><td><code>description</code></td><td>JSONB</td><td>NOT NULL</td><td>Full job description in 4 languages</td></tr>
+                <tr><td><code>requirements</code></td><td>JSONB</td><td></td><td>Array of requirements per language</td></tr>
+                <tr><td><code>location</code></td><td>TEXT</td><td>NOT NULL</td><td>"erbil" | "sulaymaniyah" | "duhok" | "baghdad" | "remote"</td></tr>
+                <tr><td><code>job_type</code></td><td>TEXT</td><td>NOT NULL, CHECK (...)</td><td>"full-time" | "part-time" | "remote" | "contract"</td></tr>
+                <tr><td><code>salary_min</code></td><td>INTEGER</td><td></td><td>Minimum salary in USD</td></tr>
+                <tr><td><code>salary_max</code></td><td>INTEGER</td><td></td><td>Maximum salary in USD</td></tr>
+                <tr><td><code>currency</code></td><td>TEXT</td><td>DEFAULT 'USD'</td><td>Salary currency</td></tr>
+                <tr><td><code>experience_level</code></td><td>TEXT</td><td></td><td>"entry" | "mid" | "senior" | "executive"</td></tr>
+                <tr><td><code>tags</code></td><td>TEXT[]</td><td></td><td>e.g. ["React", "Node.js"]</td></tr>
+                <tr><td><code>is_active</code></td><td>BOOLEAN</td><td>DEFAULT true</td><td>Soft toggle for job status</td></tr>
+                <tr><td><code>applications_count</code></td><td>INTEGER</td><td>DEFAULT 0</td><td>Denormalized counter</td></tr>
+                <tr><td><code>expires_at</code></td><td>TIMESTAMPTZ</td><td></td><td>Auto-expiry for job listings</td></tr>
+                <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>DEFAULT now()</td><td>Record creation timestamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- applicants table -->
+        <div>
+          <h4 class="font-bold text-navy text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-user-check text-action text-xs"></i> applicants</h4>
+          <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <table class="schema-table">
+              <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code class="pk">id</code></td><td>UUID</td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td><td>Unique application ID</td></tr>
+                <tr><td><code>job_id</code></td><td>UUID</td><td><code class="fk">FK → jobs.id</code>, ON DELETE CASCADE</td><td>Applied job</td></tr>
+                <tr><td><code>user_id</code></td><td>UUID</td><td><code class="fk">FK → auth.users.id</code></td><td>Applicant (may be null for guest)</td></tr>
+                <tr><td><code>full_name</code></td><td>TEXT</td><td>NOT NULL</td><td>Applicant display name</td></tr>
+                <tr><td><code>email</code></td><td>TEXT</td><td>NOT NULL</td><td>Contact email</td></tr>
+                <tr><td><code>phone</code></td><td>TEXT</td><td></td><td>Contact phone</td></tr>
+                <tr><td><code>resume_url</code></td><td>TEXT</td><td></td><td>Supabase Storage reference</td></tr>
+                <tr><td><code>cover_letter</code></td><td>TEXT</td><td></td><td>Optional cover letter</td></tr>
+                <tr><td><code>status</code></td><td>TEXT</td><td>DEFAULT 'pending', CHECK (...)</td><td>"pending" | "reviewed" | "shortlisted" | "rejected" | "hired"</td></tr>
+                <tr><td><code>employer_notes</code></td><td>TEXT</td><td></td><td>Private employer notes</td></tr>
+                <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>DEFAULT now()</td><td>Application timestamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- saved_jobs table -->
+        <div>
+          <h4 class="font-bold text-navy text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-bookmark text-action text-xs"></i> saved_jobs</h4>
+          <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <table class="schema-table">
+              <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code class="pk">id</code></td><td>UUID</td><td>PRIMARY KEY</td><td>Unique save ID</td></tr>
+                <tr><td><code>user_id</code></td><td>UUID</td><td><code class="fk">FK → auth.users.id</code>, NOT NULL</td><td>User who saved</td></tr>
+                <tr><td><code>job_id</code></td><td>UUID</td><td><code class="fk">FK → jobs.id</code>, NOT NULL</td><td>Saved job</td></tr>
+                <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>DEFAULT now()</td><td>Save timestamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate mt-2"><strong>UNIQUE(user_id, job_id)</strong> — prevents duplicate saves</p>
+        </div>
+        <!-- Indexes -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <h4 class="font-bold text-amber-800 text-sm mb-2 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-500 text-xs"></i> Recommended Indexes</h4>
+          <pre class="text-xs text-amber-900 leading-relaxed overflow-x-auto">CREATE INDEX idx_jobs_location ON jobs(location);
+CREATE INDEX idx_jobs_type ON jobs(job_type);
+CREATE INDEX idx_jobs_employer ON jobs(employer_id);
+CREATE INDEX idx_jobs_active ON jobs(is_active, created_at DESC);
+CREATE INDEX idx_applicants_job ON applicants(job_id);
+CREATE INDEX idx_applicants_user ON applicants(user_id);
+CREATE INDEX idx_applicants_status ON applicants(status);
+CREATE INDEX idx_saved_user_job ON saved_jobs(user_id, job_id);
+-- GIN index for JSONB language queries
+CREATE INDEX idx_jobs_title_en ON jobs USING gin ((title->'en'));
+CREATE INDEX idx_jobs_title_ku_so ON jobs USING gin ((title->'ku_so'));
+CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
+        </div>
+      </div>
+    `;
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    let currentLang = 'en';
+    let savedJobs = new Set(JSON.parse(localStorage.getItem('savedJobs') || '[]'));
+    let showSavedOnly = false;
+
+    // ==========================================
+    // LANGUAGE SWITCHING
+    // ==========================================
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('preferredLang', lang);
+      const data = i18n[lang];
+      const html = document.documentElement;
+
+      // Set direction and lang
+      html.setAttribute('dir', data.dir);
+      html.setAttribute('lang', lang === 'ku_so' ? 'ckb' : lang === 'ku_bad' ? 'kmr' : lang);
+
+      // Set font
+      if (data.dir === 'rtl') {
+        document.body.style.fontFamily = "'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif";
+      } else {
+        document.body.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
+      }
+
+      // Update flag icon and label
+      const flagMap = {
+        'en': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg',
+        'ku_so': 'https://www.marefa.org/w/images/thumb/3/35/Flag_of_Kurdistan.svg/1200px-Flag_of_Kurdistan.svg.png',
+        'ku_bad': 'https://www.marefa.org/w/images/thumb/3/35/Flag_of_Kurdistan.svg/1200px-Flag_of_Kurdistan.svg.png',
+        'ar': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Iraq.svg'
+      };
+      
+      const flagImg = document.getElementById('currentFlag');
+      if (flagImg) flagImg.src = flagMap[lang];
+      
+      document.getElementById('langLabel').textContent = data.langLabel;
+
+      // Update all text nodes with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const value = getNestedValue(data, key);
+        if (value) el.textContent = value;
+      });
+
+      // Update placeholders
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        const value = getNestedValue(data, key);
+        if (value) el.placeholder = value;
+      });
+
+      // Update select options
+      updateSelectOptions(lang);
+
+      // Re-render dynamic content
+      renderJobs();
+      renderCompanies();
+
+      // Close dropdown
+      document.getElementById('langDropdown').classList.remove('open');
+    }
+
+    function getNestedValue(obj, path) {
+      return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    }
+
+    function updateSelectOptions(lang) {
+      const data = i18n[lang];
+      // Location selects
+      const locSelects = [document.getElementById('heroLocation'), document.getElementById('filterLocation')];
+      locSelects.forEach(sel => {
+        if (!sel) return;
+        const opts = sel.options;
+        for (let i = 0; i < opts.length; i++) {
+          const val = opts[i].value;
+          if (val === '') {
+            opts[i].textContent = data.jobs.allLocations || data.hero.allLocations;
+          } else if (data.loc[val]) {
+            opts[i].textContent = data.loc[val];
+          }
+        }
+      });
+      // Type select
+      const typeSel = document.getElementById('filterType');
+      if (typeSel) {
+        const typeMap = { '': data.jobs.allTypes, 'full-time': data.jobs.fullTime, 'part-time': data.jobs.partTime, 'remote': data.jobs.remote, 'contract': data.jobs.contract };
+        for (let i = 0; i < typeSel.options.length; i++) {
+          const val = typeSel.options[i].value;
+          if (typeMap[val]) typeSel.options[i].textContent = typeMap[val];
+        }
+      }
+    }
+
+    // ==========================================
+    // JOB RENDERING
+    // ==========================================
+    function renderJobs(filteredJobs) {
+      const data = i18n[currentLang];
+      const grid = document.getElementById('jobGrid');
+      const emptyState = document.getElementById('emptyState');
+      const loadMore = document.getElementById('loadMoreWrap');
+      const resultCount = document.getElementById('resultCount');
+      const list = filteredJobs || jobs;
+
+      if (list.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        loadMore.classList.add('hidden');
+        resultCount.textContent = '0';
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      loadMore.classList.remove('hidden');
+      resultCount.textContent = list.length;
+
+      grid.innerHTML = list.map((job, idx) => {
+        const isSaved = savedJobs.has(job.id);
+        const typeColors = {
+          'full-time': 'bg-emerald-50 text-emerald-700',
+          'part-time': 'bg-amber-50 text-amber-700',
+          'remote': 'bg-sky-50 text-sky-700',
+          'contract': 'bg-purple-50 text-purple-700'
+        };
+        const typeLabels = {
+          'full-time': data.jobs.fullTime,
+          'part-time': data.jobs.partTime,
+          'remote': data.jobs.remote,
+          'contract': data.jobs.contract
+        };
+        const locLabel = data.loc[job.locationKey] || job.locationKey;
+
+        // Format Salary Display
+        let salaryDisplay = "";
+        if (job.salaryMin && job.salaryMax) {
+          const symbol = job.currency === 'IQD' ? 'د.ع' : '$';
+          const min = Number(job.salaryMin).toLocaleString();
+          const max = Number(job.salaryMax).toLocaleString();
+          salaryDisplay = job.currency === 'IQD' ? `${min} - ${max} ${symbol}` : `${symbol}${min} - ${symbol}${max}`;
+        } else {
+          salaryDisplay = job.salary ? (job.salary[currentLang] || job.salary['en']) : '---';
+        }
+
+        return `
+          <div class="job-card bg-white rounded-2xl border border-border p-5 reveal" style="transition-delay:${idx * 0.05}s">
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden" style="background:${job.color}">
+                  ${job.logoUrl ? `<img src="${job.logoUrl}" alt="${job.company.en} logo" class="w-full h-full object-cover">` : job.logo}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-navy text-sm leading-snug truncate">${job.title[currentLang] || job.title['en']}</h3>
+                  <p class="text-slate text-xs mt-0.5 truncate">${job.company[currentLang] || job.company['en']}</p>
+                </div>
+              </div>
+              <button onclick="toggleSave(${job.id})" class="bookmark-btn ${isSaved ? 'saved' : ''} w-8 h-8 rounded-lg hover:bg-gray-50 flex items-center justify-center transition-colors shrink-0" aria-label="Save job">
+                <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark text-sm ${isSaved ? 'text-amber-400' : 'text-slate-lighter'}"></i>
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <span class="badge bg-gray-50 text-slate"><i class="fa-solid fa-location-dot text-[10px]"></i> ${locLabel}</span>
+              <span class="badge ${typeColors[job.type]}">${typeLabels[job.type]}</span>
+              <span class="badge bg-gray-50 text-slate"><i class="fa-solid fa-money-bill-wave text-[10px]"></i> ${salaryDisplay}</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 mb-4">
+              ${job.tags.map(t => `<span class="text-[11px] font-medium text-slate-lighter bg-surface px-2 py-0.5 rounded-md">${t}</span>`).join('')}
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+              <span class="text-[11px] text-slate-lighter">${data.jobs.posted} ${typeof job.posted === 'object' ? (job.posted[currentLang] || job.posted['en']) : job.posted}</span>
+              <button onclick="openApplyModal('${job.id}', '${job.userId}', '${(job.title[currentLang] || job.title['en']).replace(/'/g, "\\'")}')" class="bg-action hover:bg-action-hover text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all hover:shadow-md hover:shadow-action/20">
+                ${data.jobs.quickApply}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Trigger reveal for new cards
+      requestAnimationFrame(() => observeReveals());
+    }
+
+    function renderCompanies() {
+      const data = i18n[currentLang];
+      const grid = document.getElementById('companiesGrid');
+      grid.innerHTML = companies.map((c, idx) => `
+        <div class="bg-surface rounded-2xl border border-border p-5 flex flex-col items-center text-center hover:border-action/20 hover:shadow-md transition-all cursor-pointer reveal" style="transition-delay:${idx * 0.07}s">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg mb-3" style="background:${c.color}">
+            ${c.logo}
+          </div>
+          <h4 class="font-semibold text-navy text-xs leading-snug mb-1">${c.name[currentLang]}</h4>
+          <span class="text-[11px] text-slate">${c.openJobs} ${data.companies.openJobs}</span>
+        </div>
+      `).join('');
+      requestAnimationFrame(() => observeReveals());
+    }
+
+    // ==========================================
+    // FILTERING
+    // ==========================================
+    function applyFilters() {
+      const searchTerm = document.getElementById('filterSearch').value.toLowerCase();
+      const locationFilter = document.getElementById('filterLocation').value;
+      const typeFilter = document.getElementById('filterType').value;
+
+      const filtered = jobs.filter(job => {
+        const titleMatch = !searchTerm ||
+          job.title.en.toLowerCase().includes(searchTerm) ||
+          job.title.ku_so.includes(searchTerm) ||
+          job.title.ar.includes(searchTerm) ||
+          job.company.en.toLowerCase().includes(searchTerm) ||
+          job.company.ku_so.includes(searchTerm) ||
+          job.company.ar.includes(searchTerm);
+
+        const locMatch = !locationFilter || job.locationKey === locationFilter;
+        const typeMatch = !typeFilter || job.type === typeFilter;
+        const savedMatch = !showSavedOnly || savedJobs.has(job.id);
+
+        return titleMatch && locMatch && typeMatch && savedMatch;
+      });
+
+      renderJobs(filtered);
+    }
+
+    function toggleSavedFilter(e) {
+      if(e) e.preventDefault();
+      showSavedOnly = !showSavedOnly;
+      
+      // Update visual state of the button if needed
+      const savedLinks = document.querySelectorAll('[data-i18n="nav.saved"]');
+      savedLinks.forEach(link => {
+        if(showSavedOnly) link.parentElement.classList.add('text-action');
+        else link.parentElement.classList.remove('text-action');
+      });
+
+      applyFilters();
+      scrollToJobs();
+    }
+
+    function clearFilters() {
+      document.getElementById('filterSearch').value = '';
+      document.getElementById('filterLocation').value = '';
+      document.getElementById('filterType').value = '';
+      showSavedOnly = false;
+      applyFilters();
+    }
+
+    function quickSearch(term) {
+      document.getElementById('filterSearch').value = term;
+      scrollToJobs();
+      applyFilters();
+    }
+
+    function scrollToJobs() {
+      document.getElementById('jobs').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==========================================
+    // BOOKMARK
+    // ==========================================
+    function toggleSave(jobId) {
+      const data = i18n[currentLang];
+      if (savedJobs.has(jobId)) {
+        savedJobs.delete(jobId);
+        showToast(data.toast.removed, false);
+      } else {
+        savedJobs.add(jobId);
+        showToast(data.toast.saved, false);
+      }
+      
+      // Save to LocalStorage and Update UI
+      localStorage.setItem('savedJobs', JSON.stringify([...savedJobs]));
+      updateSavedBadge();
+      applyFilters();
+    }
+
+    function updateSavedBadge() {
+      const badge = document.getElementById('savedBadge');
+      if (!badge) return;
+      if(savedJobs.size > 0) {
+        badge.textContent = savedJobs.size;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // ==========================================
+    // MODALS
+    // ==========================================
+    let currentApplyingJob = null;
+    function openApplyModal(jobId, employerId, jobTitle) {
+      document.getElementById('applyJobTitle').textContent = jobTitle;
+      currentApplyingJob = { jobId, employerId };
+      document.getElementById('applyModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeApplyModal() {
+      document.getElementById('applyModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    async function submitApply(e) {
+      e.preventDefault();
+      const fileInput = e.target.querySelector('input[type="file"]');
+      const formData = {
+        fullName: e.target.querySelectorAll('input')[0].value,
+        email: e.target.querySelectorAll('input')[1].value,
+        phone: e.target.querySelectorAll('input')[2].value,
+      };
+      
+      if (window.submitApplicationToDb) {
+        await window.submitApplicationToDb(currentApplyingJob.jobId, currentApplyingJob.employerId, formData, fileInput.files[0]);
+      }
+    }
+    function openSchemaModal() {
+      document.getElementById('schemaContent').innerHTML = dbSchema;
+      document.getElementById('schemaModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSchemaModal() {
+      document.getElementById('schemaModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', e => {
+        if (e.target === modal) {
+          modal.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Close modals on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => {
+          m.classList.remove('open');
+          document.body.style.overflow = '';
+        });
+      }
+    });
+
+    // ==========================================
+    // TOAST
+    // ==========================================
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${isError ? 'error' : ''}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-500'}"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ==========================================
+    // SCROLL ANIMATIONS
+    // ==========================================
+    function observeReveals() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+    }
+
+    // ==========================================
+    // NAV SCROLL EFFECT
+    // ==========================================
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('mainNav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+      lastScroll = window.scrollY;
+    });
+
+    // ==========================================
+    // PARTICLES
+    // ==========================================
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const size = Math.random() * 4 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.bottom = '-20px';
+        particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+        particle.style.animationDelay = (Math.random() * 10) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // ==========================================
+    // LANGUAGE DROPDOWN
+    // ==========================================
+    document.getElementById('langBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('langDropdown').classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      document.getElementById('langDropdown').classList.remove('open');
+    });
+
+    // ==========================================
+    // MOBILE MENU
+    // ==========================================
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      const menu = document.getElementById('mobileMenu');
+      const btn = document.getElementById('mobileMenuBtn');
+      menu.classList.toggle('open');
+      const isOpen = menu.classList.contains('open');
+      btn.innerHTML = isOpen ? '<i class="fa-solid fa-xmark text-lg"></i>' : '<i class="fa-solid fa-bars text-lg"></i>';
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobileMenu').classList.remove('open');
+        document.getElementById('mobileMenuBtn').innerHTML = '<i class="fa-solid fa-bars text-lg"></i>';
+      });
+    });
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    async function init() {
+      const savedLang = localStorage.getItem('preferredLang') || 'en';
+      setLang(savedLang);
+      createParticles();
+      observeReveals();
+      if (window.fetchJobsFromDb) await window.fetchJobsFromDb();
+      await fetchAndDisplayGlobalStats();
+      updateSavedBadge();
+    }
+
+    // ==========================================
+    // GLOBAL STATS
+    // ==========================================
+    async function fetchAndDisplayGlobalStats() {
+      try {
+        // Total Jobs
+        const jobsSnapshot = await getDocs(collection(db, "jobs"));
+        document.getElementById('totalJobsCount').textContent = jobsSnapshot.size;
+
+        // Total Employers
+        const employersSnapshot = await getDocs(query(collection(db, "users"), where("role", "==", "employer")));
+        document.getElementById('totalEmployersCount').textContent = employersSnapshot.size;
+
+        // Total Job Seekers
+        const seekersSnapshot = await getDocs(query(collection(db, "users"), where("role", "==", "seeker")));
+        document.getElementById('totalSeekersCount').textContent = seekersSnapshot.size;
+      } catch (e) {
+        console.error("Error fetching global stats:", e);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5nZtGd35Dc-rShXdt29E6iTrIKPkRGac",
+      authDomain: "mygameapp-69be7.firebaseapp.com",
+      projectId: "mygameapp-69be7",
+      storageBucket: "mygameapp-69be7.firebasestorage.app",
+      messagingSenderId: "770807145943",
+      appId: "1:770807145943:web:593cb35242cf3dfc1d1792"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Initialize EmailJS with your Public Key
+    emailjs.init("XOqyP-eUUbJQValRr"); 
+
+    // بارکرنا کاران تنێ ژ Firebase
+    window.fetchJobsFromDb = async function() {
+      try {
+        let q = query(collection(db, "jobs"), orderBy("createdAt", "desc"));
+
+        // ئەگەر بکارئینەر یێ چوویە ژوور، پشکنینێ بۆ ڕۆڵێ وی بکە
+        if (auth.currentUser) {
+          const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+          if (userDoc.exists() && userDoc.data().role === 'employer') {
+            // ئەگەر خودان کار بیت، تنێ کارێن وی نیشا بدە
+            q = query(collection(db, "jobs"), 
+                      where("userId", "==", auth.currentUser.uid), 
+                      orderBy("createdAt", "desc"));
+          }
+        }
+
+        const querySnapshot = await getDocs(q);
+        const dbJobs = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            logo: data.logoUrl ? null : data.company.en.substring(0, 2).toUpperCase(), // Only generate text logo if no image logo
+            color: '#0055FF',
+            tags: ['New'],
+            posted: { en: 'Just now', ku_so: 'ئێستا', ku_bad: 'نوکە', ar: 'الآن' }
+          };
+        });
+        
+        // دانانا کارێن داتابەیسێ د لیستێ دا
+        jobs = dbJobs;
+        renderJobs();
+      } catch (e) { 
+        console.error("Error loading jobs:", e);
+      }
+    }
+
+    // ==========================================
+    // GLOBAL STATS
+    // ==========================================
+    async function fetchAndDisplayGlobalStats() {
+      try {
+        // Total Jobs
+        const jobsSnapshot = await getDocs(collection(db, "jobs"));
+        document.getElementById('totalJobsCount').textContent = jobsSnapshot.size;
+
+        // Total Employers
+        const employersSnapshot = await getDocs(query(collection(db, "users"), where("role", "==", "employer")));
+        document.getElementById('totalEmployersCount').textContent = employersSnapshot.size;
+
+        // Total Job Seekers
+        const seekersSnapshot = await getDocs(query(collection(db, "users"), where("role", "==", "seeker")));
+        document.getElementById('totalSeekersCount').textContent = seekersSnapshot.size;
+      } catch (e) {
+        console.error("Error fetching global stats:", e);
+      }
+    }
+
+    window.submitApplicationToDb = async function(jobId, employerId, formData, file) {
+      try {
+        const btn = document.querySelector('#applyForm button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = "جێبەجێکرن...";
+
+        // پشکنین کا ئایا داخوازیەکا هەلاویستی یا هەی یان نە
+        if (auth.currentUser) {
+          const q = query(collection(db, "applications"), 
+                    where("seekerId", "==", auth.currentUser.uid), 
+                    where("status", "==", "pending"));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            alert("تە داخوازییەکا هەلاویستی یا هەی. تکایە چەڤەڕێ بە تا جاب دگەهیتە تە بەری داخوازییەکا دی بنێری.");
+            return;
+          }
+        }
+
+        const data = i18n[currentLang];
+        let resumeUrl = "";
+
+        // بلندکرنا فایلێ CV بۆ Storage
+        if (file) {
+          const fileRef = ref(storage, `resumes/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          resumeUrl = await getDownloadURL(fileRef);
+        }
+
+        await addDoc(collection(db, "applications"), {
+          jobId,
+          employerId,
+          ...formData,
+          resumeUrl,
+          seekerId: auth.currentUser ? auth.currentUser.uid : 'guest',
+          appliedAt: serverTimestamp()
+        });
+        
+        // ئاگادارکرنا خودان کاری ب ڕێکا ئیمەیلی
+        const employerDoc = await getDoc(doc(db, "users", employerId));
+        if (employerDoc.exists()) {
+          const employerEmail = employerDoc.data().email;
+          const jobTitle = document.getElementById('applyJobTitle').textContent;
+
+          emailjs.send("service_6l8ug0x", "template_uswjvfd", {
+            to_email: employerEmail,
+            from_name: formData.fullName,
+            job_title: jobTitle,
+            applicant_email: formData.email,
+            applicant_phone: formData.phone,
+            resume_url: resumeUrl
+          });
+        }
+
+        closeApplyModal();
+        document.getElementById('applyForm').reset();
+        if (typeof showToast === 'function') {
+          showToast(data.toast.applied, false);
+        } else {
+          alert(data.toast.applied);
+        }
+      } catch (e) {
+        console.error("Error submitting application:", e);
+        alert("کێشەیەک پەیدابوو لە کاتی ناردنی داواکاری.");
+      } finally {
+        const btn = document.querySelector('#applyForm button[type="submit"]');
+        btn.disabled = false;
+        btn.innerText = i18n[currentLang].apply.submit;
+      }
+    }
+
+    const signInLink = document.getElementById('sign-in-link');
+    const mobileSignInLink = document.getElementById('mobile-sign-in-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userProfileArea = document.getElementById('user-profile-area');
+    const userDisplayName = document.getElementById('user-display-name');
+    const mobileUserArea = document.getElementById('mobile-user-area');
+    const mobileUserName = document.getElementById('mobile-user-name');
+    const dashboardLink = document.getElementById('dashboard-link');
+    const mobileDashboardLink = document.getElementById('mobile-dashboard-link');
+    const seekerLink = document.getElementById('seeker-link');
+    const mobileSeekerLink = document.getElementById('mobile-seeker-link');
+    const navPostJob = document.getElementById('nav-post-job');
+    const mobilePostJob = document.getElementById('mobile-post-job');
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is signed in
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().role === 'employer') {
+          // Show dashboard on desktop navbar, hide seeker link
+          if(dashboardLink) dashboardLink.classList.remove('hidden');
+          if(mobileDashboardLink) mobileDashboardLink.classList.remove('hidden');
+          if(navPostJob) {
+            navPostJob.classList.remove('hidden');
+            navPostJob.classList.add('sm:inline-flex');
+          }
+          if(mobilePostJob) mobilePostJob.classList.remove('hidden');
+          
+          if(seekerLink) seekerLink.classList.add('hidden');
+          if(mobileSeekerLink) mobileSeekerLink.classList.add('hidden');
+        } else {
+          // Show applications on desktop navbar, hide dashboard link
+          if(dashboardLink) dashboardLink.classList.add('hidden');
+          if(mobileDashboardLink) mobileDashboardLink.classList.add('hidden');
+          if(navPostJob) navPostJob.classList.add('hidden');
+          if(mobilePostJob) mobilePostJob.classList.add('hidden');
+
+          if(seekerLink) seekerLink.classList.remove('hidden');
+          if(mobileSeekerLink) mobileSeekerLink.classList.remove('hidden');
+        }
+
+        if(signInLink) {
+          signInLink.classList.add('hidden');
+          signInLink.classList.remove('sm:inline-flex');
+        }
+        if(mobileSignInLink) mobileSignInLink.classList.add('hidden');
+        
+        if(userProfileArea) userProfileArea.classList.remove('hidden');
+        if(userProfileArea) userProfileArea.classList.add('flex');
+        if(userDisplayName) userDisplayName.textContent = user.displayName || user.email.split('@')[0];
+        
+        if(mobileUserArea) {
+          mobileUserArea.classList.remove('hidden');
+          mobileUserArea.classList.add('flex');
+          if(mobileUserName) mobileUserName.textContent = user.displayName || user.email.split('@')[0];
+        }
+
+          // نویژەنکرنا لیستا کاران بپێی ڕۆڵێ نووی
+          await window.fetchJobsFromDb();
+      } else {
+        // User is signed out
+        if(seekerLink) seekerLink.classList.add('hidden');
+        if(dashboardLink) dashboardLink.classList.add('hidden');
+        if(mobileSeekerLink) mobileSeekerLink.classList.add('hidden');
+        if(mobileDashboardLink) mobileDashboardLink.classList.add('hidden');
+        if(navPostJob) navPostJob.classList.add('hidden');
+        if(mobilePostJob) mobilePostJob.classList.add('hidden');
+
+        if(signInLink) {
+          signInLink.classList.remove('hidden');
+          signInLink.classList.add('sm:inline-flex');
+        }
+        if(mobileSignInLink) mobileSignInLink.classList.remove('hidden');
+        
+        if(userProfileArea) userProfileArea.classList.add('hidden');
+        if(userProfileArea) userProfileArea.classList.remove('flex');
+        if(mobileUserArea) mobileUserArea.classList.add('hidden');
+      }
+    });
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+          window.location.reload();
+        });
+      });
+    }
+  </script>
+</body>
+</html>

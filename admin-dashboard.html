@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>داشبۆردا خودان کار — KurdJobs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    body { font-family: 'Noto Sans Arabic', sans-serif; background-color: #0B1628; color: white; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(11,22,40,0.8); backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-all">
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <div>
+          <h1 class="text-2xl font-bold">داشبۆردا خودان کار</h1>
+          <p class="text-gray-400 text-sm">برێڤەبرنا کارێن تە یێن بەلاڤکری</p>
+        </div>
+      </div>
+      <a href="post-job.html" class="bg-[#0055FF] hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2">
+        <i class="fa-solid fa-plus text-xs"></i>
+        بەلاڤکرنا کارەکێ نوی
+      </a>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="text-gray-400 text-xs font-semibold uppercase mb-1">کۆما کاران</div>
+        <div id="totalJobs" class="text-3xl font-bold">0</div>
+      </div>
+      <div class="glass-card p-6 rounded-2xl border-r-4 border-green-500">
+        <div class="text-gray-400 text-xs font-semibold uppercase mb-1">کارێن چالاک</div>
+        <div id="activeJobsCount" class="text-3xl font-bold">0</div>
+      </div>
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="text-gray-400 text-xs font-semibold uppercase mb-1">داخوازی</div>
+        <div class="text-3xl font-bold">٠</div>
+      </div>
+    </div>
+
+    <!-- Applicants Modal -->
+    <div id="applicantsModal" class="modal-overlay">
+      <div class="glass-card rounded-3xl w-full max-w-2xl mx-4 overflow-hidden max-h-[80vh] flex flex-col">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center">
+          <h3 class="text-xl font-bold">لیستا داواکاران</h3>
+          <button onclick="closeApplicants()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="applicantsList" class="p-6 overflow-y-auto divide-y divide-white/5"></div>
+      </div>
+    </div>
+
+    <!-- Jobs List -->
+    <div class="glass-card rounded-3xl overflow-hidden">
+      <div class="p-6 border-b border-white/5 flex items-center justify-between">
+        <h2 class="font-bold text-lg">لیستا کارێن تە</h2>
+        <button onclick="loadMyJobs()" class="text-gray-400 hover:text-white transition-colors">
+          <i class="fa-solid fa-rotate text-sm"></i>
+        </button>
+      </div>
+      
+      <div id="myJobsList" class="divide-y divide-white/5">
+        <!-- Jobs will be loaded here -->
+        <div class="p-20 text-center text-gray-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-4"></i>
+          <p>دهێتە بارکرن...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, orderBy, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5nZtGd35Dc-rShXdt29E6iTrIKPkRGac",
+      authDomain: "mygameapp-69be7.firebaseapp.com",
+      projectId: "mygameapp-69be7",
+      storageBucket: "mygameapp-69be7.firebasestorage.app",
+      messagingSenderId: "770807145943",
+      appId: "1:770807145943:web:593cb35242cf3dfc1d1792"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Initialize EmailJS
+    emailjs.init("XOqyP-eUUbJQValRr");
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+      } else {
+        loadMyJobs(user.uid);
+      }
+    });
+
+    async function loadMyJobs(uid) {
+      const list = document.getElementById('myJobsList');
+      try {
+        const q = query(collection(db, "jobs"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        document.getElementById('totalJobs').textContent = snapshot.size;
+        document.getElementById('activeJobsCount').textContent = snapshot.size;
+
+        if (snapshot.empty) {
+          list.innerHTML = '<div class="p-20 text-center text-gray-500">چ کار نینن. <a href="post-job.html" class="text-blue-500 hover:underline">ئێکەم کار بەلاڤ بکە</a></div>';
+          return;
+        }
+
+        list.innerHTML = snapshot.docs.map(jobDoc => {
+          const job = jobDoc.data();
+          return `
+            <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-500 font-bold overflow-hidden">
+                  ${job.logoUrl ? `<img src="${job.logoUrl}" alt="${job.company.en} logo" class="w-full h-full object-cover">` : job.company.en.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 class="font-bold text-white">${job.title.en}</h3>
+                  <p class="text-gray-400 text-xs">${job.locationKey.toUpperCase()} • ${job.type.replace('-', ' ')}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="viewApplicants('${jobDoc.id}')" class="px-4 py-2 rounded-xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all text-xs font-bold">
+                  داواکاران
+                </button>
+                <a href="post-job.html?edit=${jobDoc.id}" class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center">
+                  <i class="fa-solid fa-pen-to-square text-sm"></i>
+                </a>
+                <button onclick="deleteJob('${jobDoc.id}')" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                  <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+        if (error.code === 'failed-precondition') {
+          list.innerHTML = `<div class="p-10 text-center text-amber-400 text-sm">پێدڤی ب دروستکرنا ئیندێکسی (Index) هەیە د فایەربەیس دا دا کو کارێن تە دیار ببن. تکایە لینکێ د کنسۆلا براوزەری (F12) دا ڤەکە یان ب شێوەیەکێ دەستی دروست بکە.</div>`;
+        } else {
+          list.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">کێشەیەک پەیدابوو: ${error.message}</div>`;
+        }
+      }
+    }
+
+    window.viewApplicants = async (jobId) => {
+      const list = document.getElementById('applicantsList');
+      document.getElementById('applicantsModal').classList.add('open');
+      list.innerHTML = '<p class="text-center py-10 text-gray-500">دهێتە بارکرن...</p>';
+      
+      try {
+        const q = query(collection(db, "applications"), where("jobId", "==", jobId));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          list.innerHTML = '<p class="text-center py-10 text-gray-500">هیچ کەسەکێ هێشتا داخوازی پێشکێش نەکرییە.</p>';
+          return;
+        }
+        list.innerHTML = snap.docs.map(d => {
+          const app = d.data();
+          const status = app.status || 'pending';
+          let statusBadge = '';
+          
+          if(status === 'reviewed') {
+            statusBadge = '<span class="text-[9px] bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full font-bold">Reviewed</span>';
+          } else if(status === 'hired') {
+            statusBadge = '<span class="text-[9px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">Hired</span>';
+          } else if(status === 'rejected') {
+            statusBadge = '<span class="text-[9px] bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full font-bold">Rejected</span>';
+          } else {
+            statusBadge = '<span class="text-[9px] bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full font-bold">Pending</span>';
+          }
+
+          return `
+            <div class="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 last:border-0">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="font-bold text-white">${app.fullName}</div>
+                  ${statusBadge}
+                </div>
+                <div class="text-sm text-gray-400">${app.email} | ${app.phone || 'بێ تەلەفۆن'}</div>
+                ${app.resumeUrl ? `
+                  <a href="${app.resumeUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-xs font-semibold">
+                    <i class="fa-solid fa-file-pdf"></i> بینینا سیڤی (CV)
+                  </a>
+                ` : ''}
+              </div>
+              <div class="flex gap-2">
+                <button onclick="updateAppStatus('${d.id}', 'hired', '${jobId}')" class="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all text-[10px] font-bold">Mark Hired</button>
+                <button onclick="updateAppStatus('${d.id}', 'reviewed', '${jobId}')" class="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all text-[10px] font-bold">Mark Reviewed</button>
+                <button onclick="updateAppStatus('${d.id}', 'rejected', '${jobId}')" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-bold">Mark Rejected</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        list.innerHTML = '<p class="text-red-400">Error: ' + e.message + '</p>';
+      }
+    };
+
+    window.updateAppStatus = async (appId, newStatus, jobId) => {
+      try {
+        const appRef = doc(db, "applications", appId);
+        await updateDoc(appRef, { status: newStatus });
+
+        // ئاگادارکرنا داخوازکارێ کاری ب ڕێکا ئیمەیلی
+        const appSnap = await getDoc(appRef);
+        const jobSnap = await getDoc(doc(db, "jobs", jobId));
+        const employerSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+        
+        if (appSnap.exists() && jobSnap.exists() && employerSnap.exists()) {
+          const appData = appSnap.data();
+          const jobData = jobSnap.data();
+          const empData = employerSnap.data();
+          
+          let statusMsg = newStatus === 'reviewed' ? 'پێداچوون بۆ هاتە کرن (Reviewed)' : 
+                          newStatus === 'hired' ? 'هاتیە وەرگرتن بۆ ڤی کاری! (Hired)' : 
+                          'هاتە ڕەتکرن (Rejected)';
+
+          emailjs.send("service_6l8ug0x", "template_uswjvfd", {
+            to_email: appData.email,
+            seeker_name: appData.fullName,
+            job_title: jobData.title.en,
+            status: statusMsg,
+            date: new Date().toLocaleDateString('ku-IQ', { year:'numeric', month:'long', day:'numeric' }),
+            employer_name: empData.displayName,
+            employer_email: empData.email,
+            contact_info: newStatus === 'hired' ? `تکایە پەیوەندی ب کۆمپانیایێ بکە ل سەر ڤی ئیمەیلی بۆ هەماهەنگیێ: ${empData.email}` : ''
+          }).then(() => {
+            console.log("ئیمەیل ب سەرکەفتی هاتە هنارتن بۆ داخوازکاری.");
+          }).catch((err) => {
+            console.error("شەکستی د هنارتنا ئیمەیلی دا:", err);
+            alert("بارودۆخ هاتە گوهۆڕین بەلێ ئیمەیل نەهاتە هنارتن.");
+          });
+        }
+
+        viewApplicants(jobId); // Refresh the list
+      } catch (e) {
+        console.error("Error updating status:", e);
+        alert("کێشەیەک پەیدابوو: " + e.message);
+      }
+    };
+
+    window.closeApplicants = () => document.getElementById('applicantsModal').classList.remove('open');
+
+    window.deleteJob = async (jobId) => {
+      if (!confirm('تۆ پشتڕاستی کو دڤێت ڤی کاری ژێببەی؟')) return;
+      
+      try {
+        await deleteDoc(doc(db, "jobs", jobId));
+        alert('کار ب سەرکەفتی هاتە ژێبرن.');
+        loadMyJobs(auth.currentUser.uid);
+      } catch (error) {
+        alert('کێشەیەک پەیدابوو دەما ژێبرنێ: ' + error.message);
+      }
+    };
+  </script>
+</body>
+</html>
