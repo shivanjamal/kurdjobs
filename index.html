@@ -578,10 +578,10 @@
           </div>
           <p class="text-white/30 text-xs leading-relaxed" data-i18n="footer.desc">The leading job platform connecting talent with opportunity across Kurdistan and Iraq.</p>
           <div class="flex items-center gap-3 mt-4">
-            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-facebook-f text-xs"></i></a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-linkedin-in text-xs"></i></a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-instagram text-xs"></i></a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-x-twitter text-xs"></i></a>
+            <a href="https://www.facebook.com/shvan.duhoki.9469/" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+            <a href="https://www.linkedin.com/in/shvan-jamal-b785a63b5?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-linkedin-in text-xs"></i></a>
+            <a href="https://www.instagram.com/iamshvan.26" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-instagram text-xs"></i></a>
+            <a href="https://twitter.com/iamshvan" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-action/20 flex items-center justify-center text-white/40 hover:text-action transition-colors"><i class="fa-brands fa-x-twitter text-xs"></i></a>
           </div>
         </div>
         <div>
@@ -835,7 +835,7 @@
         },
         hero: {
           badge: 'ئێکەم پلاتفۆرمێ کاری ل کوردستانێ و عێراقێ',
-          title: 'کارێ خەونێن خۆ بدۆزە', titleHighlight: 'ل کوردستانێ',
+          title: 'کارێ خەونێن خۆ ببینە', titleHighlight: 'ل کوردستانێ',
           subtitle: 'پەیوەندیێ ب باشترین خودان کاران بکە ل دهۆک، هەولێر، سلێمانی، و کەرکووکێ. هەزاران دەلیڤێن کاری چەڤەڕێی تە نە.',
           searchPlaceholder: 'ناوی کار، وشەی کلیل، یان کۆمپانیا...',
           allLocations: 'هەمی جهـ', searchBtn: 'گەڕیان ل کاران', popular: 'بەربلاڤترین:',
@@ -846,7 +846,7 @@
           showing: 'نیشادان', results: 'ئەنجام',
           filterSearch: 'فلتەرکرن ب ناڤی یان کۆمپانیایێ...', allLocations: 'هەمی جهـ',
           allTypes: 'هەمی جۆر', fullTime: 'دەمێ تەمام', partTime: 'نیڤ دەم',
-          remote: 'ژ دوور ڤە', contract: 'گرێبەست', clear: 'پاککرن',
+          remote: 'ژ دوور ڤە', contract: 'گرێبەست', clear: 'پاقژکرن',
           noResults: 'چ کار نەهاتنە دیتن بپێی ڤان مەرجان',
           clearFilters: 'ژێبرنا هەمی فلتەران', loadMore: 'بینینا هەمی کاران',
           quickApply: 'پێشکێشکرنا ب لەز', save: 'پاشەکەوت', posted: 'هاتییە بەلاڤکرن'
@@ -1821,15 +1821,4 @@ CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
   </script>
 </body>
 </html>
-    });
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        signOut(auth).then(() => {
-          window.location.reload();
-        });
-      });
-    }
-  </script>
-</body>
-</html>
+   
