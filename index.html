@@ -1662,12 +1662,16 @@ CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
         btn.disabled = true;
         btn.innerText = "جێبەجێکرن...";
 
-        // پشکنین کا ئایا داخوازیەکا هەلاویستی یا هەی یان نە
         if (auth.currentUser) {
-          const q = query(collection(db, "applications"), 
-                    where("seekerId", "==", auth.currentUser.uid), 
-                    where("status", "==", "pending"));
-          const snap = await getDocs(q);
+          // پشکنین کا ئایا داخوازیەکا هەلاویستی یا هەی یان نە
+          // تێبینی: ئەڤ بەشە پێویستی ب Composite Index هەیە د Firestore دا
+          const appsRef = collection(db, "applications");
+          const q = query(
+            appsRef, 
+            where("seekerId", "==", auth.currentUser.uid), 
+            where("status", "==", "pending")
+          );
+          const snap = await getDocs(q).catch(err => { throw new Error("Firestore Index Error: " + err.message); });
           if (!snap.empty) {
             alert("تە داخوازییەکا هەلاویستی یا هەی. تکایە چەڤەڕێ بە تا جاب دگەهیتە تە بەری داخوازییەکا دی بنێری.");
             return;
@@ -1679,7 +1683,7 @@ CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
 
         // بلندکرنا فایلێ CV بۆ Storage
         if (file) {
-          const fileRef = ref(storage, `resumes/${Date.now()}_${file.name}`);
+          const fileRef = ref(storage, `resumes/${Date.now()}_${file.name.replace(/\s/g, '_')}`);
           await uploadBytes(fileRef, file);
           resumeUrl = await getDownloadURL(fileRef);
         }
@@ -1718,7 +1722,8 @@ CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
         }
       } catch (e) {
         console.error("Error submitting application:", e);
-        alert("کێشەیەک پەیدابوو لە کاتی ناردنی داواکاری.");
+        // نیشاندانا هەڵەیێ ب دروستی دا بزانی کێشە ل کوویە
+        alert("کێشەیەک پەیدابوو: " + e.message);
       } finally {
         const btn = document.querySelector('#applyForm button[type="submit"]');
         btn.disabled = false;
@@ -1804,6 +1809,18 @@ CREATE INDEX idx_jobs_title_ar ON jobs USING gin ((title->'ar'));</pre>
         if(userProfileArea) userProfileArea.classList.remove('flex');
         if(mobileUserArea) mobileUserArea.classList.add('hidden');
       }
+    });
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+          window.location.reload();
+        });
+      });
+    }
+  </script>
+</body>
+</html>
     });
 
     if (logoutBtn) {
